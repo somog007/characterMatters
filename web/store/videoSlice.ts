@@ -32,8 +32,9 @@ export const fetchVideos = createAsyncThunk(
     try {
       const response = await api.get('/videos');
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch videos');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch videos');
     }
   }
 );
@@ -44,8 +45,9 @@ export const fetchVideoById = createAsyncThunk(
     try {
       const response = await api.get(`/videos/${id}`);
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch video');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch video');
     }
   }
 );

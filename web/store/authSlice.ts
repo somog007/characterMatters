@@ -6,6 +6,7 @@ interface User {
   email: string;
   name: string;
   role: string;
+  avatar?: string;
 }
 
 interface AuthState {
@@ -29,10 +30,13 @@ export const login = createAsyncThunk(
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
     try {
       const response = await api.post('/auth/login', credentials);
-      localStorage.setItem('token', response.data.token);
+      if (typeof window !== 'undefined' && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      return rejectWithValue(err.response?.data?.message || 'Login failed');
     }
   }
 );
@@ -42,10 +46,13 @@ export const register = createAsyncThunk(
   async (userData: { email: string; password: string; name: string }, { rejectWithValue }) => {
     try {
       const response = await api.post('/auth/register', userData);
-      localStorage.setItem('token', response.data.token);
+      if (typeof window !== 'undefined' && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Registration failed');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      return rejectWithValue(err.response?.data?.message || 'Registration failed');
     }
   }
 );
@@ -55,9 +62,10 @@ export const getCurrentUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get('/auth/me');
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to get user');
+      return { user: response.data };
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      return rejectWithValue(err.response?.data?.message || 'Failed to get user');
     }
   }
 );

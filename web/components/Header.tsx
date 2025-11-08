@@ -5,11 +5,12 @@ import { usePathname } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { logout } from '@/store/authSlice';
 import { motion } from 'framer-motion';
+import type { RootState } from '@/store';
 
 export default function Header() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
-  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const { isAuthenticated } = useAppSelector((state: RootState) => state.auth);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -60,6 +61,14 @@ export default function Header() {
                   }`}
                 >
                   Dashboard
+                </Link>
+                <Link
+                  href="/profile"
+                  className={`hover:text-yellow-300 transition-colors font-semibold ${
+                    pathname === '/profile' ? 'text-yellow-300 underline' : ''
+                  }`}
+                >
+                  Profile
                 </Link>
                 <button
                   onClick={handleLogout}

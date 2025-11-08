@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/store/hooks';
 import LoadingSpinner from './LoadingSpinner';
+import type { RootState } from '@/store';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -11,7 +12,7 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const router = useRouter();
-  const { isAuthenticated, loading } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, loading } = useAppSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {

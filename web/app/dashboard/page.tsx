@@ -68,9 +68,12 @@ export default function Dashboard() {
                 <p className="text-gray-700 mb-4">
                   Manage your account settings and preferences.
                 </p>
-                <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-colors">
+                <Link 
+                  href="/profile"
+                  className="inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-colors"
+                >
                   View Profile
-                </button>
+                </Link>
               </div>
             </AnimatedCard>
           </div>

@@ -1,20 +1,31 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useMemo } from 'react';
 
 interface FloatingStarsProps {
   count?: number;
 }
 
+// Seed-based random number generator for stable values
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
 export default function FloatingStars({ count = 20 }: FloatingStarsProps) {
-  const stars = Array.from({ length: count }, (_, i) => ({
-    id: i,
-    size: Math.random() * 20 + 10,
-    left: Math.random() * 100,
-    top: Math.random() * 100,
-    duration: Math.random() * 3 + 2,
-    delay: Math.random() * 2,
-  }));
+  const stars = useMemo(
+    () =>
+      Array.from({ length: count }, (_, i) => ({
+        id: i,
+        size: seededRandom(i * 4 + 1) * 20 + 10,
+        left: seededRandom(i * 4 + 2) * 100,
+        top: seededRandom(i * 4 + 3) * 100,
+        duration: seededRandom(i * 4 + 4) * 3 + 2,
+        delay: seededRandom(i * 4 + 5) * 2,
+      })),
+    [count]
+  );
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">

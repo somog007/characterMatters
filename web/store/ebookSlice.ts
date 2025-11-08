@@ -33,8 +33,9 @@ export const fetchEbooks = createAsyncThunk(
     try {
       const response = await api.get('/ebooks');
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch ebooks');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch ebooks');
     }
   }
 );
@@ -45,8 +46,9 @@ export const fetchEbookById = createAsyncThunk(
     try {
       const response = await api.get(`/ebooks/${id}`);
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch ebook');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch ebook');
     }
   }
 );

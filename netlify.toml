@@ -1,0 +1,15 @@
+[build]
+  # Build from the web folder
+  base = "web"
+  command = "npm run build"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Optionally you can add redirects or headers here
+# For example, force HTTPS or add security headers
+
+[build.environment]
+  # Example: set environment variables through Netlify UI; keep in .env for local
+  # NEXT_PUBLIC_API_URL = "http://localhost:5000/api"
+  # NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = "pk_test_..."

@@ -2,12 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './authSlice';
 import videoReducer from './videoSlice';
 import ebookReducer from './ebookSlice';
+import subscriptionReducer from './subscriptionSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     videos: videoReducer,
     ebooks: ebookReducer,
+    subscription: subscriptionReducer,
   },
 });
 

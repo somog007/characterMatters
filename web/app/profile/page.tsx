@@ -155,6 +155,15 @@ export default function Profile() {
                     </div>
                   )}
 
+                  {user?.role !== 'subscriber' && (
+                    <a
+                      href="/subscribe"
+                      className="w-full block text-center bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                    >
+                      Upgrade to Premium ⭐
+                    </a>
+                  )}
+
                   <button
                     onClick={() => setIsEditing(true)}
                     className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"

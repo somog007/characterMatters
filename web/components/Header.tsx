@@ -10,7 +10,7 @@ import type { RootState } from '@/store';
 export default function Header() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
-  const { isAuthenticated } = useAppSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useAppSelector((state: RootState) => state.auth);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -70,6 +70,17 @@ export default function Header() {
                 >
                   Profile
                 </Link>
+                {/* Upgrade link if not a subscriber */}
+                {isAuthenticated && user?.role !== 'subscriber' && (
+                  <Link
+                    href="/subscribe"
+                    className={`hover:text-yellow-300 transition-colors font-semibold ${
+                      pathname === '/subscribe' ? 'text-yellow-300 underline' : ''
+                    }`}
+                  >
+                    Upgrade
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-full font-semibold transition-colors"

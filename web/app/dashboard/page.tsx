@@ -7,10 +7,11 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import AnimatedCard from '@/components/AnimatedCard';
 import PageTransition from '@/components/PageTransition';
 import Link from 'next/link';
+import type { RootState } from '@/store';
 
 export default function Dashboard() {
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user } = useAppSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     dispatch(getCurrentUser());
@@ -68,12 +69,22 @@ export default function Dashboard() {
                 <p className="text-gray-700 mb-4">
                   Manage your account settings and preferences.
                 </p>
-                <Link 
-                  href="/profile"
-                  className="inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-colors"
-                >
-                  View Profile
-                </Link>
+                <div className="flex flex-col space-y-3">
+                  <Link 
+                    href="/profile"
+                    className="inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-colors"
+                  >
+                    View Profile
+                  </Link>
+                  {user?.role !== 'subscriber' && (
+                    <Link
+                      href="/subscribe"
+                      className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-2 px-6 rounded-full transition-colors"
+                    >
+                      Upgrade ⭐
+                    </Link>
+                  )}
+                </div>
               </div>
             </AnimatedCard>
           </div>

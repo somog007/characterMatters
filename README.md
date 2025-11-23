@@ -130,6 +130,11 @@ See `.env.example` files in both `backend` and `frontend` directories for requir
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 
+### Netlify Build Hook
+- From the `web` app directory run `npm run trigger:netlify` to ping the Netlify build hook.
+- Ensure the environment variable `NETLIFY_BUILD_HOOK_URL` is exported (or pass it as the first argument) before running the script.
+- Optional environment variables: `NETLIFY_BUILD_BRANCH` to override the branch name and `NETLIFY_BUILD_MESSAGE` to customize the trigger message.
+
 ## License
 
 MIT License

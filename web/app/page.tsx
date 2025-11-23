@@ -40,19 +40,19 @@ export default function Home() {
 
         {/* Stats Section */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <AnimatedCard delay={0.1} className="text-center bg-gradient-to-br from-purple-100 to-pink-100">
+          <AnimatedCard delay={0.1} className="text-center bg-linear-to-br from-purple-100 to-pink-100">
             <div className="text-5xl mb-4">👨‍👩‍👧‍👦</div>
             <h3 className="text-4xl font-bold text-purple-600 mb-2">40,000+</h3>
             <p className="text-lg text-gray-700">Students Trained Since 2011</p>
           </AnimatedCard>
           
-          <AnimatedCard delay={0.2} className="text-center bg-gradient-to-br from-blue-100 to-cyan-100">
+          <AnimatedCard delay={0.2} className="text-center bg-linear-to-br from-blue-100 to-cyan-100">
             <div className="text-5xl mb-4">📚</div>
             <h3 className="text-4xl font-bold text-blue-600 mb-2">50,000+</h3>
             <p className="text-lg text-gray-700">Books Sold & Distributed</p>
           </AnimatedCard>
           
-          <AnimatedCard delay={0.3} className="text-center bg-gradient-to-br from-green-100 to-emerald-100">
+          <AnimatedCard delay={0.3} className="text-center bg-linear-to-br from-green-100 to-emerald-100">
             <div className="text-5xl mb-4">🗺️</div>
             <h3 className="text-4xl font-bold text-green-600 mb-2">10 States</h3>
             <p className="text-lg text-gray-700">Across Nigeria</p>
@@ -65,7 +65,7 @@ export default function Home() {
             What We Offer 🌟
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <AnimatedCard delay={0.1} className="bg-gradient-to-br from-yellow-50 to-orange-50">
+            <AnimatedCard delay={0.1} className="bg-linear-to-br from-yellow-50 to-orange-50">
               <div className="text-5xl mb-4 text-center">🎓</div>
               <h3 className="text-2xl font-bold mb-4 text-center text-orange-600">
                 Trainings & Conferences
@@ -83,7 +83,7 @@ export default function Home() {
               </div>
             </AnimatedCard>
 
-            <AnimatedCard delay={0.2} className="bg-gradient-to-br from-pink-50 to-rose-50">
+            <AnimatedCard delay={0.2} className="bg-linear-to-br from-pink-50 to-rose-50">
               <div className="text-5xl mb-4 text-center">📺</div>
               <h3 className="text-2xl font-bold mb-4 text-center text-pink-600">
                 TV Shows
@@ -101,14 +101,14 @@ export default function Home() {
               </div>
             </AnimatedCard>
 
-            <AnimatedCard delay={0.3} className="bg-gradient-to-br from-blue-50 to-indigo-50">
+            <AnimatedCard delay={0.3} className="bg-linear-to-br from-blue-50 to-indigo-50">
               <div className="text-5xl mb-4 text-center">📖</div>
               <h3 className="text-2xl font-bold mb-4 text-center text-blue-600">
                 Character Building Books
               </h3>
               <p className="text-gray-700 text-center">
-                14 approved books including "The ABC of Good Character," "World Kindness Day" series, 
-                and "Character Matters & Social Etiquettes" series.
+                14 approved books including &quot;The ABC of Good Character,&quot; &quot;World Kindness Day&quot; series, 
+                and &quot;Character Matters & Social Etiquettes&quot; series.
               </p>
               <div className="text-center mt-4">
                 <Link href="/products">
@@ -122,7 +122,7 @@ export default function Home() {
         </section>
 
         {/* CTA Section */}
-        <section className="text-center bg-gradient-to-r from-purple-200 via-pink-200 to-blue-200 rounded-3xl p-12 shadow-rainbow">
+        <section className="text-center bg-linear-to-r from-purple-200 via-pink-200 to-blue-200 rounded-3xl p-12 shadow-rainbow">
           <h2 className="text-4xl font-bold mb-6 text-gray-800">
             Ready to Build Character? 🚀
           </h2>

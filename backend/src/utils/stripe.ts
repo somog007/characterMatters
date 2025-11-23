@@ -36,6 +36,58 @@ export const createPaymentIntent = async (
   });
 };
 
+interface CheckoutSessionOptions {
+  customerId?: string;
+  customerEmail: string;
+  priceId: string;
+  mode: 'subscription' | 'payment';
+  successUrl: string;
+  cancelUrl: string;
+  metadata?: Record<string, string>;
+}
+
+export const createCheckoutSession = async ({
+  customerId,
+  customerEmail,
+  priceId,
+  mode,
+  successUrl,
+  cancelUrl,
+  metadata,
+}: CheckoutSessionOptions) => {
+  const params: Stripe.Checkout.SessionCreateParams = {
+    mode,
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    line_items: [
+      {
+        price: priceId,
+        quantity: 1,
+      },
+    ],
+    metadata,
+    allow_promotion_codes: true,
+  };
+
+  if (customerId) {
+    params.customer = customerId;
+  } else {
+    params.customer_email = customerEmail;
+  }
+
+  return stripe.checkout.sessions.create(params);
+};
+
+export const retrieveCheckoutSession = async (sessionId: string) => {
+  return stripe.checkout.sessions.retrieve(sessionId, {
+    expand: ['subscription', 'customer']
+  });
+};
+
+export const retrieveSubscription = async (subscriptionId: string) => {
+  return stripe.subscriptions.retrieve(subscriptionId);
+};
+
 export const handleWebhook = async (req: any, res: any) => {
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;

@@ -34,7 +34,7 @@ export default function About() {
             </ul>
           </AnimatedCard>
 
-          <AnimatedCard delay={0.3} className="mb-8 bg-gradient-to-br from-yellow-50 to-orange-50">
+          <AnimatedCard delay={0.3} className="mb-8 bg-linear-to-br from-yellow-50 to-orange-50">
             <h2 className="text-3xl font-bold mb-4 text-orange-600">Three Core Pillars</h2>
             
             <div className="space-y-6">
@@ -58,14 +58,14 @@ export default function About() {
               <div>
                 <h3 className="text-2xl font-bold mb-2 text-blue-600">3. 📚 Character Building Books</h3>
                 <p className="text-lg text-gray-700">
-                  Our 14 approved books, including bestsellers like "The ABC of Good Character" and 
-                  the "World Kindness Day" series, are being used in schools across 10 states in Nigeria.
+                  Our 14 approved books, including bestsellers like &quot;The ABC of Good Character&quot; and 
+                  the &quot;World Kindness Day&quot; series, are being used in schools across 10 states in Nigeria.
                 </p>
               </div>
             </div>
           </AnimatedCard>
 
-          <AnimatedCard delay={0.4} className="bg-gradient-to-br from-purple-100 to-pink-100">
+          <AnimatedCard delay={0.4} className="bg-linear-to-br from-purple-100 to-pink-100">
             <h2 className="text-3xl font-bold mb-4 text-center text-purple-600">
               Our Mission
             </h2>

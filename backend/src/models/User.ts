@@ -9,6 +9,8 @@ export interface IUser extends Document {
   subscription?: mongoose.Types.ObjectId;
   purchasedEBooks: mongoose.Types.ObjectId[];
   watchHistory: mongoose.Types.ObjectId[];
+  stripeCustomerId?: string;
+  paystackCustomerCode?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,7 +27,9 @@ const userSchema = new Schema<IUser>({
   avatar: String,
   subscription: { type: Schema.Types.ObjectId, ref: 'Subscription' },
   purchasedEBooks: [{ type: Schema.Types.ObjectId, ref: 'EBook' }],
-  watchHistory: [{ type: Schema.Types.ObjectId, ref: 'Video' }]
+  watchHistory: [{ type: Schema.Types.ObjectId, ref: 'Video' }],
+  stripeCustomerId: { type: String },
+  paystackCustomerCode: { type: String }
 }, {
   timestamps: true
 });

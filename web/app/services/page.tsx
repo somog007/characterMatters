@@ -11,7 +11,7 @@ export default function Services() {
 
         <div className="max-w-6xl mx-auto space-y-12">
           {/* Trainings Section */}
-          <AnimatedCard delay={0.1} className="bg-gradient-to-br from-orange-50 to-yellow-50">
+          <AnimatedCard delay={0.1} className="bg-linear-to-br from-orange-50 to-yellow-50">
             <div className="text-5xl mb-4 text-center">🎓</div>
             <h2 className="text-4xl font-bold mb-6 text-center text-orange-600">
               TRAININGS/CONFERENCES
@@ -60,7 +60,7 @@ export default function Services() {
           </AnimatedCard>
 
           {/* TV Programme Section */}
-          <AnimatedCard delay={0.2} className="bg-gradient-to-br from-pink-50 to-rose-50">
+          <AnimatedCard delay={0.2} className="bg-linear-to-br from-pink-50 to-rose-50">
             <div className="text-5xl mb-4 text-center">📺</div>
             <h2 className="text-4xl font-bold mb-6 text-center text-pink-600">
               TELEVISION PROGRAMME
@@ -76,16 +76,16 @@ export default function Services() {
                 Broadcasting On:
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-4 rounded-lg">
+                <div className="bg-linear-to-br from-purple-100 to-pink-100 p-4 rounded-lg">
                   <p className="font-bold text-lg">WAP TV</p>
                 </div>
-                <div className="bg-gradient-to-br from-blue-100 to-cyan-100 p-4 rounded-lg">
+                <div className="bg-linear-to-br from-blue-100 to-cyan-100 p-4 rounded-lg">
                   <p className="font-bold text-lg">RAVE TV</p>
                 </div>
-                <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-4 rounded-lg">
+                <div className="bg-linear-to-br from-green-100 to-emerald-100 p-4 rounded-lg">
                   <p className="font-bold text-lg">R2TV</p>
                 </div>
-                <div className="bg-gradient-to-br from-yellow-100 to-orange-100 p-4 rounded-lg">
+                <div className="bg-linear-to-br from-yellow-100 to-orange-100 p-4 rounded-lg">
                   <p className="font-bold text-lg">JYBE TV</p>
                 </div>
               </div>
@@ -98,7 +98,7 @@ export default function Services() {
           </AnimatedCard>
 
           {/* Books Section */}
-          <AnimatedCard delay={0.3} className="bg-gradient-to-br from-blue-50 to-indigo-50">
+          <AnimatedCard delay={0.3} className="bg-linear-to-br from-blue-50 to-indigo-50">
             <div className="text-5xl mb-4 text-center">📚</div>
             <h2 className="text-4xl font-bold mb-6 text-center text-blue-600">
               CHARACTER BUILDING BOOKS
@@ -114,20 +114,20 @@ export default function Services() {
               <h3 className="text-2xl font-bold text-purple-600 mb-4">States Reached:</h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {['Lagos', 'Oyo', 'Ogun', 'FCT', 'Edo', 'Bayelsa', 'Rivers', 'Akwa-Ibom', 'Ondo', 'Ekiti'].map((state, index) => (
-                  <div key={index} className="bg-gradient-to-br from-purple-100 to-blue-100 p-3 rounded-lg text-center">
+                  <div key={index} className="bg-linear-to-br from-purple-100 to-blue-100 p-3 rounded-lg text-center">
                     <p className="font-semibold">{state}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-6 rounded-lg">
+            <div className="bg-linear-to-r from-purple-100 to-pink-100 p-6 rounded-lg">
               <h3 className="text-2xl font-bold text-center text-purple-600 mb-4">
                 📖 14 Approved Books Available
               </h3>
               <p className="text-lg text-gray-700 text-center">
-                Including bestsellers like "The ABC of Good Character," "World Kindness Day" series, 
-                "Character Matters & Social Etiquettes" books, French language editions, and character 
+                Including bestsellers like &quot;The ABC of Good Character,&quot; &quot;World Kindness Day&quot; series, 
+                &quot;Character Matters &amp; Social Etiquettes&quot; books, French language editions, and character 
                 building workbooks.
               </p>
             </div>

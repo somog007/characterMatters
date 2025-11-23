@@ -19,8 +19,6 @@ export default function Products() {
     { title: 'Character Building Workbook 2', icon: '📝', category: 'Workbooks' },
   ];
 
-  const categories = ['All', 'Foundation', 'Kindness', 'Etiquettes', 'Character', 'French', 'Workbooks'];
-
   return (
     <PageTransition>
       <div className="container mx-auto px-4 py-12">
@@ -29,7 +27,7 @@ export default function Products() {
         </h1>
 
         <div className="max-w-6xl mx-auto mb-12">
-          <AnimatedCard delay={0.1} className="bg-gradient-to-br from-purple-100 to-pink-100">
+          <AnimatedCard delay={0.1} className="bg-linear-to-br from-purple-100 to-pink-100">
             <h2 className="text-3xl font-bold text-center mb-4 text-purple-600">
               Approved by Lagos State Ministry of Education ✅
             </h2>
@@ -51,11 +49,11 @@ export default function Products() {
               <AnimatedCard 
                 key={index} 
                 delay={index * 0.05}
-                className="bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-colors"
+                className="bg-linear-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-colors"
               >
                 <div className="text-center">
                   <div className="text-6xl mb-4">{book.icon}</div>
-                  <h3 className="text-xl font-bold mb-2 text-gray-800 min-h-[3rem]">
+                  <h3 className="text-xl font-bold mb-2 text-gray-800 min-h-12">
                     {book.title}
                   </h3>
                   <span className="inline-block bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold">
@@ -67,7 +65,7 @@ export default function Products() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <AnimatedCard delay={0.7} className="bg-gradient-to-br from-yellow-50 to-orange-50">
+            <AnimatedCard delay={0.7} className="bg-linear-to-br from-yellow-50 to-orange-50">
               <div className="text-center">
                 <div className="text-5xl mb-4">🏫</div>
                 <h3 className="text-2xl font-bold mb-3 text-orange-600">For Schools</h3>
@@ -77,7 +75,7 @@ export default function Products() {
               </div>
             </AnimatedCard>
 
-            <AnimatedCard delay={0.8} className="bg-gradient-to-br from-green-50 to-emerald-50">
+            <AnimatedCard delay={0.8} className="bg-linear-to-br from-green-50 to-emerald-50">
               <div className="text-center">
                 <div className="text-5xl mb-4">👨‍👩‍👧‍👦</div>
                 <h3 className="text-2xl font-bold mb-3 text-green-600">For Families</h3>
@@ -87,7 +85,7 @@ export default function Products() {
               </div>
             </AnimatedCard>
 
-            <AnimatedCard delay={0.9} className="bg-gradient-to-br from-pink-50 to-rose-50">
+            <AnimatedCard delay={0.9} className="bg-linear-to-br from-pink-50 to-rose-50">
               <div className="text-center">
                 <div className="text-5xl mb-4">🎁</div>
                 <h3 className="text-2xl font-bold mb-3 text-pink-600">Gift Sets</h3>
@@ -99,7 +97,7 @@ export default function Products() {
           </div>
 
           <div className="mt-12 text-center">
-            <AnimatedCard delay={1.0} className="bg-gradient-to-r from-purple-200 via-pink-200 to-blue-200">
+            <AnimatedCard delay={1.0} className="bg-linear-to-r from-purple-200 via-pink-200 to-blue-200">
               <h2 className="text-3xl font-bold mb-4 text-gray-800">
                 Order Your Books Today! 📦
               </h2>

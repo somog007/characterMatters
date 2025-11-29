@@ -17,7 +17,7 @@ export default function Home() {
           </p>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
             Building character and sound morals in children and young adolescents through 
-            trainings, TV shows, and character building books since 2011.
+            trainings, TV shows, and character building books since 2012.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link href="/about">
@@ -43,7 +43,7 @@ export default function Home() {
           <AnimatedCard delay={0.1} className="text-center bg-linear-to-br from-purple-100 to-pink-100">
             <div className="text-5xl mb-4">👨‍👩‍👧‍👦</div>
             <h3 className="text-4xl font-bold text-purple-600 mb-2">40,000+</h3>
-            <p className="text-lg text-gray-700">Students Trained Since 2011</p>
+            <p className="text-lg text-gray-700">Students Trained Since 2012</p>
           </AnimatedCard>
           
           <AnimatedCard delay={0.2} className="text-center bg-linear-to-br from-blue-100 to-cyan-100">

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="LinkedIn">
+  <defs>
+    <linearGradient id="liGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffb100" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="28" fill="url(#liGradient)" />
+  <rect x="30" y="50" width="12" height="45" fill="#4c1d95" />
+  <circle cx="36" cy="38" r="7" fill="#4c1d95" />
+  <path d="M55 50 L55 60 Q55 50 65 50 Q75 50 75 60 L75 95 L63 95 L63 65 Q63 60 60 60 Q55 60 55 65 L55 95 L43 95 L43 50 Z" fill="#4c1d95" />
+</svg>

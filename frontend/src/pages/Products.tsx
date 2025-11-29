@@ -56,7 +56,7 @@ const Products: React.FC = () => {
               Approved by Lagos State Ministry of Education
             </h2>
             <p className="text-xl text-gray-700">
-              Used in schools across Nigeria since 2011! 🇳🇬
+              Used in schools across Nigeria since 2023! 🇳🇬
             </p>
           </div>
         </AnimatedCard>

@@ -2,13 +2,26 @@
 
 @layer base {
   :root {
-    --background: #faf5ff;
-    --foreground: #1f2937;
+    --background: #fffaeb;
+    --foreground: #2e1156;
+    --brand-yellow-primary: #ffce33;
+    --brand-yellow-dark: #ffb100;
+    --brand-purple-primary: #6b21a8;
+    --brand-purple-dark: #4c1d95;
+    --brand-orange: #f97316;
   }
 
   body {
-    background: var(--background);
     color: var(--foreground);
+    background-color: var(--background);
+    background-image:
+      linear-gradient(180deg, rgba(255, 250, 235, 0.95), rgba(255, 247, 210, 0.9), rgba(255, 237, 213, 0.85)),
+      url('/images/patterns/logo-background.svg');
+    background-repeat: no-repeat, repeat;
+    background-size: cover, 360px;
+    background-position: center, top left;
+    background-attachment: fixed, fixed;
+    background-blend-mode: lighten;
   }
 }
 
@@ -18,16 +31,16 @@
   }
 
   .text-rainbow {
-    background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff6348, #ee5a6f);
+    background: linear-gradient(90deg, #ffce33, #ffb100, #6b21a8, #8b5cf6, #f97316);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .shadow-rainbow {
-    box-shadow: 0 10px 40px rgba(255, 107, 107, 0.3),
-                0 10px 40px rgba(254, 202, 87, 0.3),
-                0 10px 40px rgba(72, 219, 251, 0.3);
+    box-shadow: 0 10px 40px rgba(255, 206, 51, 0.3),
+                0 10px 40px rgba(107, 33, 168, 0.3),
+                0 10px 40px rgba(249, 115, 22, 0.3);
   }
 
   .animate-wiggle {
@@ -59,14 +72,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: linear-gradient(180deg, #fbbf24, #f59e0b);
+  background: linear-gradient(180deg, #ffce33, #ffb100);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #8b5cf6, #ec4899);
+  background: linear-gradient(180deg, #6b21a8, #4c1d95);
   border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #7c3aed, #db2777);
+  background: linear-gradient(180deg, #8b5cf6, #6b21a8);
 }

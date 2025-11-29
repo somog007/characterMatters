@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import AnimatedCard from '@/components/AnimatedCard';
 import PageTransition from '@/components/PageTransition';
 
@@ -11,9 +12,9 @@ export default function Services() {
 
         <div className="max-w-6xl mx-auto space-y-12">
           {/* Trainings Section */}
-          <AnimatedCard delay={0.1} className="bg-linear-to-br from-orange-50 to-yellow-50">
+          <AnimatedCard delay={0.1} className="bg-linear-to-br from-brand-yellow-50 to-brand-orange-100">
             <div className="text-5xl mb-4 text-center">🎓</div>
-            <h2 className="text-4xl font-bold mb-6 text-center text-orange-600">
+            <h2 className="text-4xl font-bold mb-6 text-center text-brand-purple-600">
               TRAININGS/CONFERENCES
             </h2>
             <p className="text-lg text-gray-700 mb-6 leading-relaxed">
@@ -24,45 +25,45 @@ export default function Services() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div className="bg-white p-4 rounded-lg shadow-md">
-                <h3 className="text-xl font-bold text-purple-600 mb-2">🤝 Trustworthiness</h3>
+                <h3 className="text-xl font-bold text-brand-purple-600 mb-2">🤝 Trustworthiness</h3>
                 <p className="text-gray-700">Building honesty and integrity in every action</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-md">
-                <h3 className="text-xl font-bold text-pink-600 mb-2">❤️ Compassion</h3>
+                <h3 className="text-xl font-bold text-brand-orange-500 mb-2">❤️ Compassion</h3>
                 <p className="text-gray-700">Developing empathy and kindness toward others</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-md">
-                <h3 className="text-xl font-bold text-blue-600 mb-2">✊ Responsibility</h3>
+                <h3 className="text-xl font-bold text-brand-purple-500 mb-2">✊ Responsibility</h3>
                 <p className="text-gray-700">Taking ownership of actions and decisions</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-md">
-                <h3 className="text-xl font-bold text-green-600 mb-2">🙏 Respect</h3>
+                <h3 className="text-xl font-bold text-brand-yellow-600 mb-2">🙏 Respect</h3>
                 <p className="text-gray-700">Honoring others and showing courtesy</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-md">
-                <h3 className="text-xl font-bold text-yellow-600 mb-2">⚖️ Fairness</h3>
+                <h3 className="text-xl font-bold text-brand-yellow-500 mb-2">⚖️ Fairness</h3>
                 <p className="text-gray-700">Treating everyone with justice and equality</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-md">
-                <h3 className="text-xl font-bold text-indigo-600 mb-2">🤗 Empathy</h3>
+                <h3 className="text-xl font-bold text-brand-purple-400 mb-2">🤗 Empathy</h3>
                 <p className="text-gray-700">Understanding and sharing others feelings</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-md md:col-span-2">
-                <h3 className="text-xl font-bold text-red-600 mb-2">👑 Leadership</h3>
+                <h3 className="text-xl font-bold text-brand-orange-600 mb-2">👑 Leadership</h3>
                 <p className="text-gray-700">Inspiring and guiding others with integrity</p>
               </div>
             </div>
 
             <p className="text-lg text-gray-700 leading-relaxed">
-              Since 2011, we have trained over <strong>40,000 students</strong> across Nigeria through 
+              Since 2012, we have trained over <strong>40,000 students</strong> across Nigeria through 
               these comprehensive programs.
             </p>
           </AnimatedCard>
 
           {/* TV Programme Section */}
-          <AnimatedCard delay={0.2} className="bg-linear-to-br from-pink-50 to-rose-50">
+          <AnimatedCard delay={0.2} className="bg-linear-to-br from-brand-purple-50 to-brand-yellow-100">
             <div className="text-5xl mb-4 text-center">📺</div>
-            <h2 className="text-4xl font-bold mb-6 text-center text-pink-600">
+            <h2 className="text-4xl font-bold mb-6 text-center text-brand-purple-600">
               TELEVISION PROGRAMME
             </h2>
             <p className="text-lg text-gray-700 mb-6 leading-relaxed">
@@ -72,21 +73,49 @@ export default function Services() {
             </p>
 
             <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-              <h3 className="text-2xl font-bold text-purple-600 mb-4 text-center">
+              <h3 className="text-2xl font-bold text-brand-purple-600 mb-4 text-center">
                 Broadcasting On:
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div className="bg-linear-to-br from-purple-100 to-pink-100 p-4 rounded-lg">
-                  <p className="font-bold text-lg">WAP TV</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="group bg-white rounded-lg hover:shadow-xl transition-all hover:scale-105">
+                  <div className="relative w-full aspect-square">
+                    <Image 
+                      src="/images/tv-stations/wap-tv.svg" 
+                      alt="WAP TV" 
+                      fill
+                      className="object-contain group-hover:scale-110 transition-transform"
+                    />
+                  </div>
                 </div>
-                <div className="bg-linear-to-br from-blue-100 to-cyan-100 p-4 rounded-lg">
-                  <p className="font-bold text-lg">RAVE TV</p>
+                <div className="group bg-white rounded-lg hover:shadow-xl transition-all hover:scale-105">
+                  <div className="relative w-full aspect-square">
+                    <Image 
+                      src="/images/tv-stations/rave-tv.svg" 
+                      alt="RAVE TV" 
+                      fill
+                      className="object-contain group-hover:scale-110 transition-transform"
+                    />
+                  </div>
                 </div>
-                <div className="bg-linear-to-br from-green-100 to-emerald-100 p-4 rounded-lg">
-                  <p className="font-bold text-lg">R2TV</p>
+                <div className="group bg-white rounded-lg hover:shadow-xl transition-all hover:scale-105">
+                  <div className="relative w-full aspect-square">
+                    <Image 
+                      src="/images/tv-stations/r2tv.svg" 
+                      alt="R2TV" 
+                      fill
+                      className="object-contain group-hover:scale-110 transition-transform"
+                    />
+                  </div>
                 </div>
-                <div className="bg-linear-to-br from-yellow-100 to-orange-100 p-4 rounded-lg">
-                  <p className="font-bold text-lg">JYBE TV</p>
+                <div className="group bg-white rounded-lg hover:shadow-xl transition-all hover:scale-105">
+                  <div className="relative w-full aspect-square">
+                    <Image 
+                      src="/images/tv-stations/jybe-tv.svg" 
+                      alt="JYBE TV" 
+                      fill
+                      className="object-contain group-hover:scale-110 transition-transform"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -98,31 +127,43 @@ export default function Services() {
           </AnimatedCard>
 
           {/* Books Section */}
-          <AnimatedCard delay={0.3} className="bg-linear-to-br from-blue-50 to-indigo-50">
+          <AnimatedCard delay={0.3} className="bg-linear-to-br from-brand-purple-50 to-brand-yellow-50">
             <div className="text-5xl mb-4 text-center">📚</div>
-            <h2 className="text-4xl font-bold mb-6 text-center text-blue-600">
+            <h2 className="text-4xl font-bold mb-6 text-center text-brand-purple-600">
               CHARACTER BUILDING BOOKS
             </h2>
-            <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-              Our comprehensive collection of character building books has been approved by the 
-              <strong> Lagos State Ministry of Education in 2023</strong>. With over <strong>50,000 copies</strong> 
-              sold and distributed, our books are being used in schools across <strong>10 states</strong> 
-              in Nigeria.
-            </p>
+            <div className="bg-white p-6 rounded-lg shadow-lg mb-6 flex items-center gap-6 flex-wrap justify-center">
+              <div className="relative w-32 h-32 shrink-0">
+                <Image 
+                  src="/images/partners/lagos-ministry-education.svg" 
+                  alt="Lagos State Ministry of Education" 
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex-1 min-w-[250px]">
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  Our comprehensive collection of character building books has been approved by the 
+                  <strong className="text-brand-purple-600"> Lagos State Ministry of Education in 2023</strong>. 
+                  With over <strong>50,000 copies</strong> sold and distributed, our books are being used 
+                  in schools across <strong>10 states</strong> in Nigeria.
+                </p>
+              </div>
+            </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-              <h3 className="text-2xl font-bold text-purple-600 mb-4">States Reached:</h3>
+              <h3 className="text-2xl font-bold text-brand-purple-600 mb-4">States Reached:</h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {['Lagos', 'Oyo', 'Ogun', 'FCT', 'Edo', 'Bayelsa', 'Rivers', 'Akwa-Ibom', 'Ondo', 'Ekiti'].map((state, index) => (
-                  <div key={index} className="bg-linear-to-br from-purple-100 to-blue-100 p-3 rounded-lg text-center">
-                    <p className="font-semibold">{state}</p>
+                  <div key={index} className="bg-linear-to-br from-brand-purple-100 to-brand-yellow-100 p-3 rounded-lg text-center">
+                    <p className="font-semibold text-brand-purple-700">{state}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-linear-to-r from-purple-100 to-pink-100 p-6 rounded-lg">
-              <h3 className="text-2xl font-bold text-center text-purple-600 mb-4">
+            <div className="bg-linear-to-r from-brand-yellow-100 to-brand-purple-100 p-6 rounded-lg">
+              <h3 className="text-2xl font-bold text-center text-brand-purple-600 mb-4">
                 📖 14 Approved Books Available
               </h3>
               <p className="text-lg text-gray-700 text-center">

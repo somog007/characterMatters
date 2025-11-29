@@ -23,7 +23,7 @@ export default function About() {
           <AnimatedCard delay={0.2} className="mb-8">
             <h2 className="text-3xl font-bold mb-4 text-blue-600">Our Impact</h2>
             <p className="text-lg text-gray-700 leading-relaxed mb-4">
-              Since our establishment in <strong>2011</strong>, Character Matters has been at the forefront 
+              Since our establishment in <strong>2012</strong>, Character Matters has been at the forefront 
               of character education in Nigeria. We have:
             </p>
             <ul className="list-disc list-inside space-y-2 text-lg text-gray-700">

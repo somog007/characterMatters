@@ -55,7 +55,7 @@ const Home: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
           >
-            Building strong character and moral values in children and young adolescents across Nigeria since <strong className="text-pink-600">2011</strong> 🇳🇬
+            Building strong character and moral values in children and young adolescents across Nigeria since <strong className="text-pink-600">2012</strong> 🇳🇬
           </motion.p>
 
           <motion.div

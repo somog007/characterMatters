@@ -50,7 +50,7 @@ const About: React.FC = () => {
             >
               <div className="flex items-center justify-center gap-4 mb-4">
                 <span className="text-6xl">🎓</span>
-                <h3 className="text-4xl font-bold text-purple-600">Since 2011</h3>
+                <h3 className="text-4xl font-bold text-purple-600">Since 2012</h3>
                 <span className="text-6xl">🌟</span>
               </div>
               <p className="text-2xl text-center font-bold text-gray-800">

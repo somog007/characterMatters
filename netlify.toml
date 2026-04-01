@@ -6,10 +6,18 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Optionally you can add redirects or headers here
-# For example, force HTTPS or add security headers
-
 [build.environment]
-  # Example: set environment variables through Netlify UI; keep in .env for local
-  # NEXT_PUBLIC_API_URL = "http://localhost:5000/api"
-  # NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = "pk_test_..."
+  # Node version — must match local development environment
+  NODE_VERSION = "22"
+  # Tell npm to install devDependencies even when NODE_ENV=production.
+  # Netlify sets NODE_ENV=production by default, which causes npm to skip
+  # devDependencies. This app needs devDeps at build time:
+  #   - @tailwindcss/postcss  (PostCSS / Tailwind v4 compilation)
+  #   - babel-plugin-react-compiler  (Next.js React Compiler support)
+  #   - typescript, eslint-config-next  (type-checking and linting during build)
+  NPM_FLAGS = "--include=dev"
+  # Disable Next.js telemetry to keep build output clean and avoid timeout noise
+  NEXT_TELEMETRY_DISABLED = "1"
+  # Set these in the Netlify UI — do NOT commit real values here
+  # NEXT_PUBLIC_API_URL = "https://your-backend.onrender.com/api"
+  # NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = "pk_live_..."

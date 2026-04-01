@@ -14,12 +14,12 @@
     "axios": "^1.13.2",
     "framer-motion": "^12.23.24",
     "next": "16.2.2",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "react-redux": "^9.2.0"
   },
   "devDependencies": {
-    "@netlify/plugin-nextjs": "^5.2.4",
+    "@netlify/plugin-nextjs": "5.15.9",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

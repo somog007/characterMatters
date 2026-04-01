@@ -6,6 +6,8 @@ import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import compression from 'compression';
 import dotenv from 'dotenv';
+import * as Sentry from '@sentry/node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { errorHandler, AppError } from './middleware/errorHandler';
 import { requestLogger, logger } from './middleware/logger';
 import authRoutes from './routes/auth';
@@ -14,8 +16,17 @@ import videoRoutes from './routes/videos';
 import ebookRoutes from './routes/ebooks';
 import subscriptionRoutes from './routes/subscriptions';
 import paymentRoutes from './routes/payments';
+import galleryRoutes from './routes/gallery';
+import adminRoutes from './routes/admin';
+import mfaRoutes from './routes/mfa';
 
 dotenv.config();
+
+// Initialize Sentry
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 1.0,
+});
 
 // Validate required environment variables early (non-fatal warnings so dev can start)
 const requiredEnv = ['JWT_SECRET', 'MONGODB_URI'];
@@ -89,9 +100,14 @@ app.use('/api/videos', videoRoutes);
 app.use('/api/ebooks', ebookRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/gallery', galleryRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/mfa', mfaRoutes);
 
 // Error handling
 app.use(errorHandler);
+
+export default app;
 
 // MongoDB connection & server start
 const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/video-ebook-platform';
@@ -137,6 +153,6 @@ const startServer = async () => {
   });
 };
 
-startServer();
-
-export default app;
+if (process.env.NODE_ENV !== 'test') {
+  startServer();
+}

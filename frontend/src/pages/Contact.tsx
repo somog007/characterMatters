@@ -2,7 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import FloatingStars from '../components/FloatingStars';
 import AnimatedCard from '../components/AnimatedCard';
-import BouncyButton from '../components/BouncyButton';
 
 const Contact: React.FC = () => {
   return (

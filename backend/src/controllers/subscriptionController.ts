@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import mongoose from 'mongoose';
 import { AuthRequest } from '../middleware/auth';
 import Subscription from '../models/Subscription';
 import { IUser } from '../models/User';
@@ -12,7 +13,7 @@ import {
 } from '../utils/stripe';
 import { initializePaystackTransaction, verifyPaystackTransaction } from '../utils/paystack';
 
-type PersistedUser = IUser & { save: () => Promise<IUser> };
+type PersistedUser = IUser & { _id: mongoose.Types.ObjectId; save: () => Promise<IUser> };
 
 const hasBlockingSubscription = async (userId: string) =>
   Subscription.findOne({ user: userId, status: { $in: ['active', 'pending'] } });
@@ -45,7 +46,7 @@ export const createSubscription = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ message: 'planId and priceId are required' });
     }
 
-    const existingSubscription = await hasBlockingSubscription(user._id.toString());
+    const existingSubscription = await hasBlockingSubscription(user.id);
     if (existingSubscription) {
       return res.status(400).json({ message: 'User already has an active subscription' });
     }
@@ -79,7 +80,7 @@ export const createSubscription = async (req: AuthRequest, res: Response) => {
     );
 
     user.role = 'subscriber';
-    user.subscription = subscription._id;
+    user.subscription = subscription._id as mongoose.Types.ObjectId;
     await user.save();
 
     res.status(201).json({
@@ -111,7 +112,7 @@ export const startStripeCheckout = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ message: 'planId and priceId are required' });
     }
 
-    const existingSubscription = await hasBlockingSubscription(user._id.toString());
+    const existingSubscription = await hasBlockingSubscription(user.id);
     if (existingSubscription) {
       return res.status(400).json({ message: 'User already has an active subscription' });
     }
@@ -139,7 +140,7 @@ export const startStripeCheckout = async (req: AuthRequest, res: Response) => {
       metadata: {
         planId,
         billingCycle,
-        userId: user._id.toString(),
+        userId: user.id,
       },
     });
 
@@ -213,7 +214,7 @@ export const finalizeStripeCheckout = async (req: AuthRequest, res: Response) =>
     );
 
     user.role = 'subscriber';
-    user.subscription = subscription._id;
+    user.subscription = subscription._id as mongoose.Types.ObjectId;
     if (typeof stripeSubscription.customer === 'string') {
       user.stripeCustomerId = stripeSubscription.customer;
     }
@@ -244,12 +245,12 @@ export const startPaystackCheckout = async (req: AuthRequest, res: Response) => 
       return res.status(400).json({ message: 'planId and amount are required' });
     }
 
-    const existingSubscription = await hasBlockingSubscription(user._id.toString());
+    const existingSubscription = await hasBlockingSubscription(user.id);
     if (existingSubscription) {
       return res.status(400).json({ message: 'User already has an active subscription' });
     }
 
-    const reference = `ps_${user._id}_${Date.now()}`;
+    const reference = `ps_${user.id}_${Date.now()}`;
 
     const resolvedCallback =
       callbackUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/subscribe?reference=${reference}`;
@@ -261,7 +262,7 @@ export const startPaystackCheckout = async (req: AuthRequest, res: Response) => 
       callbackUrl: resolvedCallback,
       metadata: {
         planId,
-        userId: user._id.toString(),
+        userId: user.id,
         billingCycle,
       },
     });
@@ -331,7 +332,7 @@ export const verifyPaystackCheckout = async (req: AuthRequest, res: Response) =>
     }
 
     user.role = 'subscriber';
-    user.subscription = subscription._id;
+    user.subscription = subscription._id as mongoose.Types.ObjectId;
     await user.save();
 
     res.json({ message: 'Subscription activated', subscription });

@@ -64,6 +64,16 @@ const Header: React.FC = () => {
                 </Link>
               </motion.div>
             )}
+            {isAuthenticated && (
+              <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
+                <Link
+                  to="/profile"
+                  className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
+                >
+                  👤 Profile
+                </Link>
+              </motion.div>
+            )}
             <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
               <Link
                 to="/about"
@@ -101,7 +111,15 @@ const Header: React.FC = () => {
                 to="/ebooks"
                 className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
               >
-                � eBooks
+                📚 eBooks
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                to="/gallery"
+                className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
+              >
+                🖼️ Gallery
               </Link>
             </motion.div>
             <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
@@ -133,6 +151,13 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="flex items-center space-x-4">
+            <div className="hidden md:block">
+              <input
+                type="text"
+                placeholder="Search videos, books..."
+                className="px-4 py-2 rounded-full bg-white/20 text-white placeholder-white/70 backdrop-blur-sm border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
+              />
+            </div>
             {isAuthenticated ? (
               <>
                 <motion.span 

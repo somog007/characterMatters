@@ -32,23 +32,33 @@ api.interceptors.response.use(
   }
 );
 
-export const authAPI = {
-  login: (credentials: { email: string; password: string }) =>
-    api.post('/auth/login', credentials),
-  register: (userData: { name: string; email: string; password: string }) =>
-    api.post('/auth/register', userData),
-};
-
 export const videoAPI = {
   getAll: (filters?: any) => api.get('/videos', { params: filters }),
   getById: (id: string) => api.get(`/videos/${id}`),
   create: (videoData: FormData) => api.post('/videos', videoData),
+  update: (id: string, data: any) => api.put(`/videos/${id}`, data),
+  delete: (id: string) => api.delete(`/videos/${id}`),
 };
 
 export const ebookAPI = {
   getAll: (filters?: any) => api.get('/ebooks', { params: filters }),
   getById: (id: string) => api.get(`/ebooks/${id}`),
   purchase: (ebookId: string) => api.post(`/ebooks/${ebookId}/purchase`),
+};
+
+export const authAPI = {
+  login: (credentials: { email: string; password: string }) =>
+    api.post('/auth/login', credentials),
+  register: (userData: { name: string; email: string; password: string }) =>
+    api.post('/auth/register', userData),
+  updateUser: (userId: string, data: any) => api.put(`/users/${userId}`, data),
+};
+
+export const galleryAPI = {
+  getAll: (params?: any) => api.get('/gallery', { params }),
+  create: (mediaData: FormData) => api.post('/gallery', mediaData),
+  update: (id: string, data: any) => api.put(`/gallery/${id}`, data),
+  delete: (id: string) => api.delete(`/gallery/${id}`),
 };
 
 export default api;

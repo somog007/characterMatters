@@ -72,11 +72,17 @@ export const upload = multer({
       } else {
         cb(new Error('Only PDF files are allowed'));
       }
-    } else if (file.fieldname === 'thumbnail' || file.fieldname === 'coverImage') {
+    } else if (file.fieldname === 'thumbnail' || file.fieldname === 'coverImage' || file.fieldname === 'galleryImage') {
       if (file.mimetype.startsWith('image/')) {
         cb(null, true);
       } else {
         cb(new Error('Only image files are allowed'));
+      }
+    } else if (file.fieldname === 'galleryVideo') {
+      if (file.mimetype.startsWith('video/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only video files are allowed'));
       }
     } else {
       cb(new Error('Unexpected field'));

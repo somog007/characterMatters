@@ -89,11 +89,6 @@ export const updateVideo = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ message: 'Video not found' });
     }
 
-    // Check ownership or admin
-    if (video.createdBy.toString() !== (req.user as any)?._id.toString() && req.user?.role !== 'admin') {
-      return res.status(403).json({ message: 'Access denied' });
-    }
-
     const updatedVideo = await Video.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -112,11 +107,6 @@ export const deleteVideo = async (req: AuthRequest, res: Response) => {
 
     if (!video) {
       return res.status(404).json({ message: 'Video not found' });
-    }
-
-    // Check ownership or admin
-    if (video.createdBy.toString() !== (req.user as any)?._id.toString() && req.user?.role !== 'admin') {
-      return res.status(403).json({ message: 'Access denied' });
     }
 
     await Video.findByIdAndDelete(req.params.id);

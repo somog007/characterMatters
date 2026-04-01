@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import User, { IUser } from '../models/User';
 
 export interface AuthRequest extends Request {
-  user?: IUser;
+  user?: IUser & { _id: mongoose.Types.ObjectId };
   body: any;
   params: any;
   query: any;
@@ -24,7 +25,7 @@ export const auth = async (req: AuthRequest, res: Response, next: NextFunction) 
       return res.status(401).json({ message: 'Token is not valid' });
     }
 
-    req.user = user;
+    req.user = user as IUser & { _id: mongoose.Types.ObjectId };
     next();
   } catch (error) {
     res.status(401).json({ message: 'Token is not valid' });

@@ -92,7 +92,7 @@ const ebookSlice = createSlice({
       .addCase(purchaseEBook.pending, (state) => {
         state.loading = true;
       })
-      .addCase(purchaseEBook.fulfilled, (state, action) => {
+      .addCase(purchaseEBook.fulfilled, (state) => {
         state.loading = false;
       })
       .addCase(purchaseEBook.rejected, (state, action) => {

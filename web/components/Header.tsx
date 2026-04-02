@@ -21,6 +21,7 @@ export default function Header() {
     { name: 'About', path: '/about' },
     { name: 'Services', path: '/services' },
     { name: 'Videos', path: '/videos' },
+    { name: 'Gallery', path: '/gallery' },
     { name: 'Books', path: '/products' },
     { name: 'eBooks', path: '/ebooks' },
     { name: 'Team', path: '/team' },

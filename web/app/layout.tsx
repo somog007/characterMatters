@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import StoreProvider from "@/store/StoreProvider";
 import FloatingStars from "@/components/FloatingStars";
+import Footer from "@/components/Footer";
 
 const comicNeue = Comic_Neue({
   weight: ['300', '400', '700'],
@@ -27,10 +28,11 @@ export default function RootLayout({
       <body className={`${comicNeue.variable} font-comic min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100`}>
         <StoreProvider>
           <FloatingStars count={15} />
-          <Header />
-          <main className="relative z-10">
-            {children}
-          </main>
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="relative z-10 flex-1">{children}</main>
+            <Footer />
+          </div>
         </StoreProvider>
       </body>
     </html>

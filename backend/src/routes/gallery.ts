@@ -8,7 +8,7 @@ import { getGallery, createGalleryItem, updateGalleryItem, deleteGalleryItem } f
 
 const router = express.Router();
 
-router.get('/', auth, getGallery);
+router.get('/', getGallery);
 router.post('/', auth, requireRole('admin'), upload.single('file'), validateBody(GalleryCreateSchema), createGalleryItem);
 router.put('/:id', auth, canManageGallery, updateGalleryItem);
 router.delete('/:id', auth, canManageGallery, deleteGalleryItem);

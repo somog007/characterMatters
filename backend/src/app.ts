@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import compression from 'compression';
 import dotenv from 'dotenv';
+import path from 'path';
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { errorHandler, AppError } from './middleware/errorHandler';
@@ -54,6 +55,9 @@ app.use(limiter);
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Static media uploads (local disk fallback when S3 is not configured)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Compression
 app.use(compression());

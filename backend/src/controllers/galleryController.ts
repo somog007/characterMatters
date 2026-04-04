@@ -2,6 +2,22 @@ import { Response } from 'express';
 import Gallery from '../models/Gallery';
 import { AuthRequest } from '../middleware/auth';
 
+const toPublicMediaUrl = (req: AuthRequest, rawUrl: string) => {
+  if (!rawUrl) return rawUrl;
+  if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) return rawUrl;
+
+  // Convert local disk paths like C:\...\uploads\file.jpg to /uploads/file.jpg
+  const normalized = rawUrl.replace(/\\/g, '/');
+  const marker = '/uploads/';
+  const idx = normalized.lastIndexOf(marker);
+  if (idx !== -1) {
+    const relative = normalized.substring(idx);
+    return `${req.protocol}://${req.get('host')}${relative}`;
+  }
+
+  return rawUrl;
+};
+
 export const getGallery = async (req: AuthRequest, res: Response) => {
   try {
     const { page = 1, limit = 20, mediaType, school, location, search, category } = req.query;
@@ -20,11 +36,19 @@ export const getGallery = async (req: AuthRequest, res: Response) => {
       ];
     }
 
-    const items = await Gallery.find(filter)
+    const dbItems = await Gallery.find(filter)
       .populate('createdBy', 'name avatar')
       .sort({ createdAt: -1 })
       .limit(Number(limit))
       .skip((Number(page) - 1) * Number(limit));
+
+    const items = dbItems.map((item: any) => {
+      const obj = item.toObject();
+      return {
+        ...obj,
+        url: toPublicMediaUrl(req, obj.url),
+      };
+    });
 
     const total = await Gallery.countDocuments(filter);
 
@@ -47,7 +71,8 @@ export const createGalleryItem = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ message: 'Media file is required' });
     }
 
-    const url = (file as any).location || (file as any).path || '';
+    const rawUrl = (file as any).location || (file as any).path || '';
+    const url = toPublicMediaUrl(req, rawUrl);
 
     const item = new Gallery({
       title,

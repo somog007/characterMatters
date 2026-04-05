@@ -27,7 +27,7 @@
 
 @layer utilities {
   .font-comic {
-    font-family: var(--font-comic), 'Comic Sans MS', cursive;
+    font-family: 'Comic Sans MS', 'Trebuchet MS', 'Segoe UI', sans-serif;
   }
 
   .text-rainbow {

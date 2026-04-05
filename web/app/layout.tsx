@@ -1,16 +1,9 @@
 import type { Metadata } from "next";
-import { Comic_Neue } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import StoreProvider from "@/store/StoreProvider";
 import FloatingStars from "@/components/FloatingStars";
 import Footer from "@/components/Footer";
-
-const comicNeue = Comic_Neue({
-  weight: ['300', '400', '700'],
-  subsets: ["latin"],
-  variable: "--font-comic",
-});
 
 export const metadata: Metadata = {
   title: "Character Matters - Building Character in Children",
@@ -25,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${comicNeue.variable} font-comic min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100`}>
+      <body className="font-comic min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
         <StoreProvider>
           <FloatingStars count={15} />
           <div className="flex min-h-screen flex-col">

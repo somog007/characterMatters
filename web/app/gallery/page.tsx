@@ -17,6 +17,36 @@ type GalleryItem = {
   url: string;
 };
 
+type GalleryGroup = {
+  title: string;
+  items: GalleryItem[];
+  school?: string;
+  location?: string;
+  eventDate?: string;
+};
+
+const groupByTitle = (items: GalleryItem[]): GalleryGroup[] => {
+  const groups = new Map<string, GalleryGroup>();
+
+  for (const item of items) {
+    const key = item.title || 'More Highlights';
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        title: key,
+        items: [],
+        school: item.school,
+        location: item.location,
+        eventDate: item.eventDate,
+      });
+    }
+
+    groups.get(key)!.items.push(item);
+  }
+
+  return Array.from(groups.values());
+};
+
 export default function GalleryPage() {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,32 +73,55 @@ export default function GalleryPage() {
 
   const grouped = useMemo(() => {
     return {
-      Events: items.filter((item) => item.category === 'Events'),
-      'School Seminars': items.filter((item) => item.category === 'School Seminars'),
-      Uncategorized: items.filter((item) => !item.category),
+      Events: groupByTitle(items.filter((item) => item.category === 'Events')),
+      'School Seminars': groupByTitle(items.filter((item) => item.category === 'School Seminars')),
+      Uncategorized: groupByTitle(items.filter((item) => !item.category)),
     };
   }, [items]);
 
-  const renderCard = (item: GalleryItem) => (
+  const renderCard = (item: GalleryItem, index: number) => (
     <article key={item._id} className="overflow-hidden rounded-xl border border-purple-100 bg-white shadow-sm">
       {item.mediaType === 'video' ? (
-        <video controls className="h-56 w-full object-cover bg-black">
-          <source src={item.url} type="video/mp4" />
-        </video>
+        <div className="relative">
+          <video controls className="h-56 w-full object-cover bg-black">
+            <source src={item.url} type="video/mp4" />
+          </video>
+          <span className="absolute right-3 top-3 rounded-full bg-black/70 px-2 py-1 text-xs font-semibold text-white">
+            Video
+          </span>
+        </div>
       ) : (
-        <img src={item.url} alt={item.title} className="h-56 w-full object-cover" />
+        <div className="relative">
+          <img src={item.url} alt={`${item.title} ${index + 1}`} className="h-56 w-full object-cover" />
+          <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2 py-1 text-xs font-semibold text-purple-800">
+            Image
+          </span>
+        </div>
       )}
-      <div className="space-y-2 p-4">
-        <h3 className="line-clamp-2 text-base font-bold text-purple-900">{item.title}</h3>
-        {(item.school || item.location) && (
-          <p className="text-sm text-gray-600">{item.school || item.location}</p>
-        )}
-        {item.description && <p className="line-clamp-2 text-sm text-gray-700">{item.description}</p>}
-        {item.eventDate && (
-          <p className="text-xs text-gray-500">{new Date(item.eventDate).toLocaleDateString()}</p>
-        )}
-      </div>
     </article>
+  );
+
+  const renderGroup = (group: GalleryGroup) => (
+    <section key={group.title} className="space-y-4 rounded-2xl border border-purple-100 bg-white/70 p-5 shadow-sm backdrop-blur-sm">
+      <div className="flex flex-col gap-2 border-b border-purple-100 pb-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h3 className="text-xl font-bold text-purple-900">{group.title}</h3>
+          {(group.school || group.location) && (
+            <p className="text-sm text-gray-600">{group.school || group.location}</p>
+          )}
+          {group.eventDate && (
+            <p className="text-xs text-gray-500">{new Date(group.eventDate).toLocaleDateString()}</p>
+          )}
+        </div>
+        <p className="text-sm font-semibold text-purple-700">
+          {group.items.length} {group.items.length === 1 ? 'asset' : 'assets'}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {group.items.map((item, index) => renderCard(item, index))}
+      </div>
+    </section>
   );
 
   return (
@@ -102,7 +155,7 @@ export default function GalleryPage() {
       )}
 
       {!loading && !error && category !== 'All' && items.length > 0 && (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">{items.map(renderCard)}</div>
+        <div className="space-y-8">{grouped[category].map(renderGroup)}</div>
       )}
 
       {!loading && !error && category === 'All' && items.length > 0 && (
@@ -110,25 +163,21 @@ export default function GalleryPage() {
           {grouped.Events.length > 0 && (
             <section>
               <h2 className="mb-4 text-2xl font-bold text-purple-800">Events</h2>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">{grouped.Events.map(renderCard)}</div>
+              <div className="space-y-8">{grouped.Events.map(renderGroup)}</div>
             </section>
           )}
 
           {grouped['School Seminars'].length > 0 && (
             <section>
               <h2 className="mb-4 text-2xl font-bold text-purple-800">School Seminars</h2>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {grouped['School Seminars'].map(renderCard)}
-              </div>
+              <div className="space-y-8">{grouped['School Seminars'].map(renderGroup)}</div>
             </section>
           )}
 
           {grouped.Uncategorized.length > 0 && (
             <section>
               <h2 className="mb-4 text-2xl font-bold text-purple-800">More Highlights</h2>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {grouped.Uncategorized.map(renderCard)}
-              </div>
+              <div className="space-y-8">{grouped.Uncategorized.map(renderGroup)}</div>
             </section>
           )}
         </div>

@@ -136,10 +136,10 @@ const Contact: React.FC = () => {
                         📞 08028289610
                       </a>
                       <a 
-                        href="tel:+2340813"
+                        href="tel:"
                         className="block text-xl text-gray-700 hover:text-purple-600 font-semibold"
                       >
-                        📞
+                        
                       </a>
                     </div>
                   </div>

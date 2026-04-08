@@ -25,6 +25,29 @@ type GalleryGroup = {
   eventDate?: string;
 };
 
+const encodePathSegment = (value: string) => encodeURIComponent(value);
+
+const buildStaticGalleryUrl = (item: GalleryItem): string | null => {
+  if (!item.category || !item.title || !item.description) return null;
+
+  return `/images/gallery/${encodePathSegment(item.category)}/${encodePathSegment(item.title)}/${encodePathSegment(item.description)}`;
+};
+
+const resolveMediaUrl = (item: GalleryItem): string => {
+  const rawUrl = item.url || '';
+  const staticUrl = buildStaticGalleryUrl(item);
+
+  if (rawUrl.startsWith('/images/gallery/')) return rawUrl;
+
+  // Imported records may still point to localhost/uploads URLs from local scripts.
+  // In production, serve from the committed static gallery folder in /public.
+  if ((rawUrl.includes('/uploads/') || rawUrl.includes('localhost:5000')) && staticUrl) {
+    return staticUrl;
+  }
+
+  return rawUrl || staticUrl || '';
+};
+
 const groupByTitle = (items: GalleryItem[]): GalleryGroup[] => {
   const groups = new Map<string, GalleryGroup>();
 
@@ -84,7 +107,7 @@ export default function GalleryPage() {
       {item.mediaType === 'video' ? (
         <div className="relative">
           <video controls className="h-56 w-full object-cover bg-black">
-            <source src={item.url} type="video/mp4" />
+            <source src={resolveMediaUrl(item)} type="video/mp4" />
           </video>
           <span className="absolute right-3 top-3 rounded-full bg-black/70 px-2 py-1 text-xs font-semibold text-white">
             Video
@@ -92,7 +115,7 @@ export default function GalleryPage() {
         </div>
       ) : (
         <div className="relative">
-          <img src={item.url} alt={`${item.title} ${index + 1}`} className="h-56 w-full object-cover" />
+          <img src={resolveMediaUrl(item)} alt={`${item.title} ${index + 1}`} className="h-56 w-full object-cover" />
           <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2 py-1 text-xs font-semibold text-purple-800">
             Image
           </span>

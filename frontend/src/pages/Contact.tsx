@@ -110,7 +110,7 @@ const Contact: React.FC = () => {
                   <div>
                     <h3 className="text-2xl font-bold text-green-600">Email Us</h3>
                     <a 
-                      href="mailto:Charactermattersng@gmail.com"
+                      href="mailto:charactermattersng@gmail.com"
                       className="text-xl text-gray-700 hover:text-green-600 font-semibold"
                     >
                       charactermattersng@gmail.com
@@ -139,7 +139,7 @@ const Contact: React.FC = () => {
                         href="tel:+2340813"
                         className="block text-xl text-gray-700 hover:text-purple-600 font-semibold"
                       >
-                        📞 0813...
+                        📞
                       </a>
                     </div>
                   </div>

@@ -7,7 +7,9 @@
     "start": "node dist/app.js",
     "dev": "nodemon",
     "build": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "migrate:gallery:paths": "ts-node src/scripts/migrateGalleryStaticPaths.ts",
+    "migrate:gallery:paths:apply": "ts-node src/scripts/migrateGalleryStaticPaths.ts --apply"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.927.0",

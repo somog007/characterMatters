@@ -32,7 +32,7 @@ export default function Footer() {
 
           <div>
             <h4 className="text-sm font-semibold uppercase tracking-wide text-purple-700">Contact</h4>
-            <p className="mt-3 text-sm text-gray-700">Email: support@charactermatters.com</p>
+            <p className="mt-3 text-sm text-gray-700">Email: charactermattersng@gmail.com</p>
             <p className="mt-1 text-sm text-gray-700">Lagos, Nigeria</p>
           </div>
         </div>

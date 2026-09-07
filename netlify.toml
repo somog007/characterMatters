@@ -6,6 +6,16 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+[[redirects]]
+  from = "/landing"
+  to = "/landing/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/landing/*"
+  to = "/landing/:splat"
+  status = 200
+
 [build.environment]
   # Node version — must match local development environment
   NODE_VERSION = "22"

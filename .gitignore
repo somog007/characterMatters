@@ -1,4 +1,9 @@
-node_modules
+node_modules/
+dist/
+.next/
+.env
+.env*.local
+*.log
 
 # Large media files — host on CDN, not in git
 *.mp4
@@ -9,4 +14,3 @@ node_modules
 # Loose WhatsApp exports accidentally in repo root
 /WhatsApp Image*
 /WhatsApp Video*
-

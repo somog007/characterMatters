@@ -9,6 +9,10 @@ export const metadata: Metadata = {
   title: "Character Matters - Building Character in Children",
   description: "Character Matters Concept is an organization envisioned to raise the standard of good character and sound morals in children and young adolescents through trainings, TV shows, and character building books.",
   keywords: "character education, children, morals, values, books, trainings, TV shows",
+  icons: {
+    icon: '/images/logo-icon.jpg',
+    apple: '/images/logo-icon.jpg',
+  },
 };
 
 export default function RootLayout({
@@ -18,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-comic min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+      <body className="font-comic min-h-screen bg-soft-hero">
         <StoreProvider>
           <FloatingStars count={15} />
           <div className="flex min-h-screen flex-col">

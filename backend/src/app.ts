@@ -20,6 +20,7 @@ import paymentRoutes from './routes/payments';
 import galleryRoutes from './routes/gallery';
 import adminRoutes from './routes/admin';
 import mfaRoutes from './routes/mfa';
+import playbackRoutes from './routes/playbackRoutes';
 
 dotenv.config();
 
@@ -107,6 +108,8 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/mfa', mfaRoutes);
+app.use('/api/playback', playbackRoutes);
+app.use('/api/videos', playbackRoutes);
 
 // Error handling
 app.use(errorHandler);

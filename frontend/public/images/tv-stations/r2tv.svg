@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="R2TV Logo">
+  <defs>
+    <linearGradient id="r2Gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6b21a8" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="40" fill="url(#r2Gradient)" />
+  <path d="M40 50 L70 50 Q90 50 90 70 Q90 85 70 85 L40 85" fill="none" stroke="#ffce33" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+  <line x1="70" y1="85" x2="90" y2="110" stroke="#ffce33" stroke-width="12" stroke-linecap="round" />
+  <path d="M110 110 Q110 75 140 75 Q170 75 170 110 Q170 135 140 130 L110 120" fill="none" stroke="#ffce33" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+  <rect x="30" y="125" width="140" height="28" rx="14" fill="#ffce33" />
+  <text x="100" y="146" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#4c1d95" text-anchor="middle">TV</text>
+</svg>

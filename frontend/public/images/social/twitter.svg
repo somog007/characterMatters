@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Twitter / X">
+  <defs>
+    <linearGradient id="twGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4c1d95" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="28" fill="url(#twGradient)" />
+  <path d="M75 35 L50 65 L30 42 M45 85 L65 60 L90 85" fill="none" stroke="#ffce33" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

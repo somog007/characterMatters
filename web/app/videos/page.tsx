@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import Image from 'next/image';
 import { fetchVideos } from '@/store/videoSlice';
@@ -8,10 +8,13 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import AnimatedCard from '@/components/AnimatedCard';
 import PageTransition from '@/components/PageTransition';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { SecureVideoPlayer } from '@/components/SecureVideoPlayer';
 
 export default function Videos() {
   const dispatch = useAppDispatch();
   const { videos, loading, error } = useAppSelector((state) => state.videos);
+  const token = useAppSelector((state) => state.auth.token) || (typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '');
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
 
   useEffect(() => {
     dispatch(fetchVideos());
@@ -32,6 +35,21 @@ export default function Videos() {
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-8 max-w-2xl mx-auto">
               <p className="text-center">{error}</p>
+            </div>
+          )}
+
+          {/* Secure Video Player Modal */}
+          {selectedVideoId && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+              <div className="relative w-full max-w-4xl bg-gray-900 rounded-2xl p-4 shadow-2xl">
+                <button
+                  onClick={() => setSelectedVideoId(null)}
+                  className="absolute -top-3 -right-3 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-purple-600 font-bold text-white shadow-lg hover:bg-purple-700 transition"
+                >
+                  ✕
+                </button>
+                <SecureVideoPlayer videoId={selectedVideoId} authToken={token} />
+              </div>
             </div>
           )}
 
@@ -72,7 +90,10 @@ export default function Videos() {
                   <span className="text-sm text-gray-500">
                     {Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')} min
                   </span>
-                  <button className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-full transition-colors text-sm">
+                  <button
+                    onClick={() => setSelectedVideoId(video._id)}
+                    className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-full transition-colors text-sm"
+                  >
                     Watch Now
                   </button>
                 </div>

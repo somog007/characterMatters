@@ -8,8 +8,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/landing/assets/index-gLrX47jI.js"></script>
-  <link rel="stylesheet" crossorigin href="/landing/assets/index-Yf2t9U19.css">
+  <link rel="icon" type="image/jpeg" href="/landing/images/logo-icon.jpg">
+  <link rel="apple-touch-icon" href="/landing/images/logo-icon.jpg">
+  <script type="module" crossorigin src="/landing/assets/index-BdfVirfX.js"></script>
+  <link rel="stylesheet" crossorigin href="/landing/assets/index-BaBHESKk.css">
 </head>
 <body>
 
@@ -23,8 +25,7 @@
   <header class="site-header" id="header">
     <div class="container nav-container">
       <a href="#" class="brand-logo">
-        <div class="logo-icon">✨</div>
-        <div class="logo-text">Character<span>Matters</span></div>
+        <img src="/landing/images/header-logo.jpg" alt="Character Matters" class="header-logo-img" />
       </a>
 
       <nav class="main-nav" id="mainNav">
@@ -517,70 +518,231 @@
       </div>
 
       <div class="pricing-grid">
-        <!-- Starter Plan -->
-        <div class="pricing-card">
+        <!-- 1st Package (20 Episodes) -->
+        <div class="pricing-card popular">
+          <div class="popular-ribbon">Best Value (20 Episodes)</div>
           <div class="plan-header">
-            <h3>Starter Explorer</h3>
-            <p class="plan-subtitle">Great for trying out initial episodes.</p>
+            <h3>1st Package</h3>
+            <p class="plan-subtitle">20 Episodes Master Collection</p>
             <div class="plan-price">
               <span class="currency">$</span>
-              <span class="amount">0</span>
-              <span class="period">/ forever</span>
+              <span class="amount" id="pkg1Price">25</span>
+              <span class="period" id="pkg1Period">/ month</span>
+            </div>
+          </div>
+          <div class="age-breakdown-box">
+            <div class="age-breakdown-title">🎬 Episode Age Distribution</div>
+            <div class="age-badge-list">
+              <div class="age-badge-item">
+                <span>Ages 2 & 3</span>
+                <span class="age-badge-pill pill-age-23">8 episodes</span>
+              </div>
+              <div class="age-badge-item">
+                <span>Ages 4 & 5</span>
+                <span class="age-badge-pill pill-age-45">8 episodes</span>
+              </div>
+              <div class="age-badge-item">
+                <span>Ages 6 - 10</span>
+                <span class="age-badge-pill pill-age-610">4 episodes</span>
+              </div>
             </div>
           </div>
           <ul class="plan-features">
-            <li>✔️ Access to 10 Free Animated Episodes</li>
-            <li>✔️ Access to 5 Read-Along eBooks</li>
+            <li>✔️ Full Access to 20 Animated Episodes</li>
+            <li>✔️ Complete Worksheets & Educator Guides</li>
+            <li>✔️ Interactive Read-Along eBooks</li>
+            <li>✔️ Multi-Child Progress Dashboard</li>
+            <li>✔️ Unlimited HD Streaming & Downloads</li>
+          </ul>
+          <a href="http://localhost:3000/subscribe?plan=package_1" class="btn btn-primary btn-block btn-glow">Select 1st Package</a>
+        </div>
+
+        <!-- 2nd Package (16 Episodes) -->
+        <div class="pricing-card popular">
+          <div class="popular-ribbon">Most Popular (16 Episodes)</div>
+          <div class="plan-header">
+            <h3>2nd Package</h3>
+            <p class="plan-subtitle">16 Episodes Gold Pack</p>
+            <div class="plan-price">
+              <span class="currency">$</span>
+              <span class="amount" id="pkg2Price">20</span>
+              <span class="period" id="pkg2Period">/ month</span>
+            </div>
+          </div>
+          <div class="age-breakdown-box">
+            <div class="age-breakdown-title">🎬 Episode Age Distribution</div>
+            <div class="age-badge-list">
+              <div class="age-badge-item">
+                <span>Ages 2 & 3</span>
+                <span class="age-badge-pill pill-age-23">6 episodes</span>
+              </div>
+              <div class="age-badge-item">
+                <span>Ages 4 & 5</span>
+                <span class="age-badge-pill pill-age-45">6 episodes</span>
+              </div>
+              <div class="age-badge-item">
+                <span>Ages 6 - 10</span>
+                <span class="age-badge-pill pill-age-610">4 episodes</span>
+              </div>
+            </div>
+          </div>
+          <ul class="plan-features">
+            <li>✔️ Full Access to 16 Animated Episodes</li>
+            <li>✔️ Printable Educator Worksheets</li>
+            <li>✔️ Interactive Read-Along eBooks</li>
+            <li>✔️ Child Progress Tracking</li>
+            <li>✔️ HD Video Streaming</li>
+          </ul>
+          <a href="http://localhost:3000/subscribe?plan=package_2" class="btn btn-primary btn-block">Select 2nd Package</a>
+        </div>
+
+        <!-- 3rd Package (13 Episodes) -->
+        <div class="pricing-card">
+          <div class="plan-header">
+            <h3>3rd Package</h3>
+            <p class="plan-subtitle">13 Episodes Silver Pack</p>
+            <div class="plan-price">
+              <span class="currency">$</span>
+              <span class="amount" id="pkg3Price">16</span>
+              <span class="period" id="pkg3Period">/ month</span>
+            </div>
+          </div>
+          <div class="age-breakdown-box">
+            <div class="age-breakdown-title">🎬 Episode Age Distribution</div>
+            <div class="age-badge-list">
+              <div class="age-badge-item">
+                <span>Ages 2 & 3</span>
+                <span class="age-badge-pill pill-age-23">5 episodes</span>
+              </div>
+              <div class="age-badge-item">
+                <span>Ages 4 & 5</span>
+                <span class="age-badge-pill pill-age-45">5 episodes</span>
+              </div>
+              <div class="age-badge-item">
+                <span>Ages 6 - 10</span>
+                <span class="age-badge-pill pill-age-610">3 episodes</span>
+              </div>
+            </div>
+          </div>
+          <ul class="plan-features">
+            <li>✔️ Full Access to 13 Animated Episodes</li>
+            <li>✔️ Character Worksheets</li>
+            <li>✔️ Read-Along eBooks</li>
+            <li>✔️ Character Badges</li>
+            <li>✔️ HD Video Streaming</li>
+          </ul>
+          <a href="http://localhost:3000/subscribe?plan=package_3" class="btn btn-outline btn-block">Select 3rd Package</a>
+        </div>
+
+        <!-- 4th Package (8 Episodes) -->
+        <div class="pricing-card">
+          <div class="plan-header">
+            <h3>4th Package</h3>
+            <p class="plan-subtitle">8 Episodes Bronze Pack</p>
+            <div class="plan-price">
+              <span class="currency">$</span>
+              <span class="amount" id="pkg4Price">10</span>
+              <span class="period" id="pkg4Period">/ month</span>
+            </div>
+          </div>
+          <div class="age-breakdown-box">
+            <div class="age-breakdown-title">🎬 Episode Age Distribution</div>
+            <div class="age-badge-list">
+              <div class="age-badge-item">
+                <span>Ages 2 & 3</span>
+                <span class="age-badge-pill pill-age-23">3 episodes</span>
+              </div>
+              <div class="age-badge-item">
+                <span>Ages 4 & 5</span>
+                <span class="age-badge-pill pill-age-45">3 episodes</span>
+              </div>
+              <div class="age-badge-item">
+                <span>Ages 6 - 10</span>
+                <span class="age-badge-pill pill-age-610">2 episodes</span>
+              </div>
+            </div>
+          </div>
+          <ul class="plan-features">
+            <li>✔️ Access to 8 Animated Episodes</li>
+            <li>✔️ Selected Printable Worksheets</li>
             <li>✔️ Basic Character Badges</li>
             <li>✔️ 1 Child Profile</li>
-            <li class="disabled">❌ Printable Educator Worksheets</li>
-            <li class="disabled">❌ Offline Downloading</li>
           </ul>
-          <a href="http://localhost:3000/register" class="btn btn-outline btn-block">Get Started Free</a>
+          <a href="http://localhost:3000/subscribe?plan=package_4" class="btn btn-outline btn-block">Select 4th Package</a>
         </div>
 
-        <!-- Hero Annual Plan (Featured) -->
-        <div class="pricing-card popular">
-          <div class="popular-ribbon">Most Popular</div>
-          <div class="plan-header">
-            <h3>Hero Family</h3>
-            <p class="plan-subtitle">Unlimited access for up to 4 children.</p>
-            <div class="plan-price">
-              <span class="currency">$</span>
-              <span class="amount" id="heroPrice">7.99</span>
-              <span class="period" id="heroPeriod">/ month billed annually</span>
-            </div>
-          </div>
-          <ul class="plan-features">
-            <li>✔️ Unlimited 150+ Animated Episodes</li>
-            <li>✔️ Unlimited 80+ Interactive eBooks</li>
-            <li>✔️ Complete Character Badge Collection</li>
-            <li>✔️ Up to 4 Child Profiles with Progress Dashboards</li>
-            <li>✔️ 100+ Printable Worksheets & Discussion Guides</li>
-            <li>✔️ Offline Viewing on Tablets & Phones</li>
-          </ul>
-          <a href="http://localhost:3000/subscribe?plan=family" class="btn btn-primary btn-block btn-glow">Start 14-Day Free Trial</a>
-        </div>
-
-        <!-- Classroom Plan -->
+        <!-- 5th Package (5 Episodes) -->
         <div class="pricing-card">
           <div class="plan-header">
-            <h3>School & Classroom</h3>
-            <p class="plan-subtitle">Designed for teachers and group lessons.</p>
+            <h3>5th Package</h3>
+            <p class="plan-subtitle">5 Episodes Starter Pack</p>
             <div class="plan-price">
               <span class="currency">$</span>
-              <span class="amount" id="schoolPrice">19.99</span>
-              <span class="period" id="schoolPeriod">/ month billed annually</span>
+              <span class="amount" id="pkg5Price">7</span>
+              <span class="period" id="pkg5Period">/ month</span>
+            </div>
+          </div>
+          <div class="age-breakdown-box">
+            <div class="age-breakdown-title">🎬 Episode Age Distribution</div>
+            <div class="age-badge-list">
+              <div class="age-badge-item">
+                <span>Ages 2 & 3</span>
+                <span class="age-badge-pill pill-age-23">2 episodes</span>
+              </div>
+              <div class="age-badge-item">
+                <span>Ages 4 & 5</span>
+                <span class="age-badge-pill pill-age-45">2 episodes</span>
+              </div>
+              <div class="age-badge-item">
+                <span>Ages 6 - 10</span>
+                <span class="age-badge-pill pill-age-610">1 episode</span>
+              </div>
             </div>
           </div>
           <ul class="plan-features">
-            <li>✔️ Full Library Access for up to 35 Students</li>
-            <li>✔️ Teacher Lesson Plans mapped to CASEL Standards</li>
-            <li>✔️ Interactive Whiteboard Mode</li>
-            <li>✔️ Bulk Certificate Generator</li>
-            <li>✔️ Dedicated Support Specialist</li>
+            <li>✔️ Access to 5 Animated Episodes</li>
+            <li>✔️ Introductory Worksheets</li>
+            <li>✔️ Read-Along eBooks</li>
+            <li>✔️ Standard Support</li>
           </ul>
-          <a href="http://localhost:3000/subscribe?plan=school" class="btn btn-outline btn-block">Start Classroom Trial</a>
+          <a href="http://localhost:3000/subscribe?plan=package_5" class="btn btn-outline btn-block">Select 5th Package</a>
+        </div>
+
+        <!-- 6th Package (3 Episodes) -->
+        <div class="pricing-card">
+          <div class="plan-header">
+            <h3>6th Package</h3>
+            <p class="plan-subtitle">3 Episodes Mini Sampler</p>
+            <div class="plan-price">
+              <span class="currency">$</span>
+              <span class="amount" id="pkg6Price">5</span>
+              <span class="period" id="pkg6Period">/ month</span>
+            </div>
+          </div>
+          <div class="age-breakdown-box">
+            <div class="age-breakdown-title">🎬 Episode Age Distribution</div>
+            <div class="age-badge-list">
+              <div class="age-badge-item">
+                <span>Ages 2 & 3</span>
+                <span class="age-badge-pill pill-age-23">1 episode</span>
+              </div>
+              <div class="age-badge-item">
+                <span>Ages 4 & 5</span>
+                <span class="age-badge-pill pill-age-45">1 episode</span>
+              </div>
+              <div class="age-badge-item">
+                <span>Ages 6 - 10</span>
+                <span class="age-badge-pill pill-age-610">1 episode</span>
+              </div>
+            </div>
+          </div>
+          <ul class="plan-features">
+            <li>✔️ Access to 3 Animated Episodes</li>
+            <li>✔️ 1 Episode for Each Age Group</li>
+            <li>✔️ Sample Activity Worksheets</li>
+            <li>✔️ Standard Support</li>
+          </ul>
+          <a href="http://localhost:3000/subscribe?plan=package_6" class="btn btn-outline btn-block">Select 6th Package</a>
         </div>
       </div>
     </div>
@@ -658,8 +820,8 @@
     <div class="container footer-grid">
       <div class="footer-brand">
         <a href="#" class="brand-logo">
-          <div class="logo-icon">✨</div>
-          <div class="logo-text text-white">Character<span>Matters</span></div>
+          <img src="/landing/images/logo-icon.jpg" alt="Character Matters Logo" class="logo-icon-img" />
+          <img src="/landing/images/header-logo.jpg" alt="Character Matters" class="header-logo-img text-white" />
         </a>
         <p>Nurturing character, empathy, and resilience in the next generation through storytelling and interactive learning.</p>
         <p class="copyright">&copy; 2026 Character Matters Inc. All rights reserved.</p>

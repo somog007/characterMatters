@@ -25,42 +25,172 @@ type BillingCycle = 'monthly' | 'yearly';
 interface PlanConfig {
   id: string;
   title: string;
+  subtitle: string;
+  totalEpisodes: number;
   description: string;
   priceLabel: string;
   paystackLabel: string;
   priceMonthly: number;
   paystackAmount: number;
   stripePriceId: string;
-  features: string[];
-  gradient: string;
+  badge?: string;
   recommended?: boolean;
+  gradient: string;
+  ageBreakdown: {
+    toddler: string;   // Ages 2 & 3
+    preK: string;      // Ages 4 & 5
+    schoolAge: string; // Ages 6 - 10
+  };
+  features: string[];
 }
 
 const PLANS: PlanConfig[] = [
   {
-    id: 'basic',
-    title: 'Basic Character Pack',
-    description: 'Access selected character videos & 3 eBooks',
-    priceLabel: '$5/mo',
-  paystackLabel: 'NGN 5,000/mo',
-    priceMonthly: 5,
-    paystackAmount: 5000,
-    stripePriceId: 'price_basic_monthly',
-    features: ['Access to 10 videos', '3 eBooks', 'Basic progress tracking'],
-  gradient: 'from-blue-100 to-cyan-100',
+    id: 'package_1',
+    title: '1st Package',
+    subtitle: '20 Episodes Master Pack',
+    totalEpisodes: 20,
+    description: 'Complete 20-episode collection across all age categories',
+    priceLabel: '$25',
+    paystackLabel: 'NGN 25,000',
+    priceMonthly: 25,
+    paystackAmount: 25000,
+    stripePriceId: 'price_package_1_monthly',
+    badge: 'Best Value (20 Episodes)',
+    recommended: true,
+    gradient: 'from-purple-100 via-pink-100 to-amber-100',
+    ageBreakdown: {
+      toddler: '8 episodes',
+      preK: '8 episodes',
+      schoolAge: '4 episodes',
+    },
+    features: [
+      '20 High-Quality Animated Episodes',
+      'Full Worksheets & Educator Guides',
+      'Interactive Read-Along eBooks',
+      'Multi-Child Progress Dashboard',
+    ],
   },
   {
-    id: 'premium',
-    title: 'Premium Growth Pack',
-    description: 'All videos, eBooks & subscriber badge',
-    priceLabel: '$15/mo',
-  paystackLabel: 'NGN 15,000/mo',
-    priceMonthly: 15,
-    paystackAmount: 15000,
-    stripePriceId: 'price_premium_monthly',
-    features: ['All videos', 'All eBooks', 'Subscriber badge', 'Priority support'],
-  gradient: 'from-purple-100 to-pink-100',
-    recommended: true,
+    id: 'package_2',
+    title: '2nd Package',
+    subtitle: '16 Episodes Gold Pack',
+    totalEpisodes: 16,
+    description: 'Comprehensive 16-episode package for growing families',
+    priceLabel: '$20',
+    paystackLabel: 'NGN 20,000',
+    priceMonthly: 20,
+    paystackAmount: 20000,
+    stripePriceId: 'price_package_2_monthly',
+    badge: 'Most Popular (16 Episodes)',
+    gradient: 'from-blue-100 via-indigo-100 to-purple-100',
+    ageBreakdown: {
+      toddler: '6 episodes',
+      preK: '6 episodes',
+      schoolAge: '4 episodes',
+    },
+    features: [
+      '16 High-Quality Animated Episodes',
+      'Printable Educator Worksheets',
+      'Interactive Read-Along eBooks',
+      'Child Progress Tracking',
+    ],
+  },
+  {
+    id: 'package_3',
+    title: '3rd Package',
+    subtitle: '13 Episodes Silver Pack',
+    totalEpisodes: 13,
+    description: 'Balanced 13-episode set tailored for all learning stages',
+    priceLabel: '$16',
+    paystackLabel: 'NGN 16,000',
+    priceMonthly: 16,
+    paystackAmount: 16000,
+    stripePriceId: 'price_package_3_monthly',
+    gradient: 'from-emerald-100 via-teal-100 to-cyan-100',
+    ageBreakdown: {
+      toddler: '5 episodes',
+      preK: '5 episodes',
+      schoolAge: '3 episodes',
+    },
+    features: [
+      '13 High-Quality Animated Episodes',
+      'Character Worksheets',
+      'Read-Along eBooks',
+      'Character Badges & Certificates',
+    ],
+  },
+  {
+    id: 'package_4',
+    title: '4th Package',
+    subtitle: '8 Episodes Bronze Pack',
+    totalEpisodes: 8,
+    description: 'Essential 8-episode package for core character values',
+    priceLabel: '$10',
+    paystackLabel: 'NGN 10,000',
+    priceMonthly: 10,
+    paystackAmount: 10000,
+    stripePriceId: 'price_package_4_monthly',
+    gradient: 'from-amber-100 via-orange-100 to-yellow-100',
+    ageBreakdown: {
+      toddler: '3 episodes',
+      preK: '3 episodes',
+      schoolAge: '2 episodes',
+    },
+    features: [
+      '8 High-Quality Animated Episodes',
+      'Selected Printable Worksheets',
+      'Basic Character Badges',
+      '1 Child Profile',
+    ],
+  },
+  {
+    id: 'package_5',
+    title: '5th Package',
+    subtitle: '5 Episodes Starter Pack',
+    totalEpisodes: 5,
+    description: 'Compact 5-episode collection introducing key values',
+    priceLabel: '$7',
+    paystackLabel: 'NGN 7,000',
+    priceMonthly: 7,
+    paystackAmount: 7000,
+    stripePriceId: 'price_package_5_monthly',
+    gradient: 'from-rose-100 via-pink-100 to-purple-100',
+    ageBreakdown: {
+      toddler: '2 episodes',
+      preK: '2 episodes',
+      schoolAge: '1 episode',
+    },
+    features: [
+      '5 High-Quality Animated Episodes',
+      'Introductory Worksheets',
+      'Read-Along eBooks',
+      'Standard Support',
+    ],
+  },
+  {
+    id: 'package_6',
+    title: '6th Package',
+    subtitle: '3 Episodes Mini Sampler',
+    totalEpisodes: 3,
+    description: 'Quick 3-episode trial with 1 episode per age group',
+    priceLabel: '$5',
+    paystackLabel: 'NGN 5,000',
+    priceMonthly: 5,
+    paystackAmount: 5000,
+    stripePriceId: 'price_package_6_monthly',
+    gradient: 'from-cyan-100 via-sky-100 to-blue-100',
+    ageBreakdown: {
+      toddler: '1 episode',
+      preK: '1 episode',
+      schoolAge: '1 episode',
+    },
+    features: [
+      '3 High-Quality Animated Episodes',
+      '1 Episode for Each Age Group',
+      'Sample Activity Worksheets',
+      'Standard Support',
+    ],
   },
 ];
 
@@ -86,8 +216,15 @@ function SubscribeContent() {
   );
 
   useEffect(() => {
+    const planFromUrl = searchParams?.get('plan');
+    if (planFromUrl && PLANS.some((p) => p.id === planFromUrl)) {
+      setSelectedPlanId(planFromUrl);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     const planFromState = subscriptionState.data?.plan;
-    if (planFromState) {
+    if (planFromState && PLANS.some((p) => p.id === planFromState)) {
       startTransition(() => {
         setSelectedPlanId(planFromState);
       });
@@ -219,12 +356,12 @@ function SubscribeContent() {
         <button
           onClick={() => handleCheckout('paystack', plan)}
           disabled={isPaystackProcessing || subscriptionState.verifying || isSubscriber}
-          className="w-full rounded-full bg-white/70 py-3 font-semibold text-purple-600 shadow transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-full bg-white/80 py-3 font-semibold text-purple-600 shadow transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           {paystackLabel}
         </button>
         <p className="text-center text-xs text-gray-500">
-          Stripe bills in USD ({plan.priceLabel}). Paystack bills in NGN ({plan.paystackLabel}).
+          Stripe bills in USD ({plan.priceLabel}/mo). Paystack bills in NGN ({plan.paystackLabel}/mo).
         </p>
       </div>
     );
@@ -234,10 +371,9 @@ function SubscribeContent() {
     <ProtectedRoute>
       <PageTransition>
         <div className="container mx-auto px-4 py-12">
-          <h1 className="mb-4 text-center text-5xl font-bold text-rainbow">Upgrade Your Experience 🌟</h1>
+          <h1 className="mb-4 text-center text-5xl font-bold text-rainbow">Episode Packages & Pricing 🌟</h1>
           <p className="mx-auto mb-10 max-w-3xl text-center text-lg text-gray-700">
-            Choose the subscription that fits you best and pay using Stripe or Paystack. Once your checkout is
-            complete we will unlock the full Character Matters library instantly.
+            Choose the episode package that fits your family best. Each package includes animated episodes tailored across three key age groups. Pay easily via Stripe or Paystack.
           </p>
 
           {localNotice && (
@@ -282,36 +418,67 @@ function SubscribeContent() {
               </div>
             </AnimatedCard>
           ) : (
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {PLANS.map((plan, idx) => {
                 const isActive = selectedPlanId === plan.id;
                 return (
                   <AnimatedCard
                     key={plan.id}
-                    delay={0.1 + idx * 0.1}
-                    className={`relative h-full bg-linear-to-br ${plan.gradient} ${
-                      plan.recommended ? 'ring-4 ring-purple-300' : ''
-                    } ${isActive ? 'shadow-xl' : ''}`}
+                    delay={0.1 + idx * 0.08}
+                    className={`relative flex flex-col justify-between h-full bg-linear-to-br ${plan.gradient} p-6 rounded-2xl border border-gray-200 ${
+                      plan.recommended ? 'ring-4 ring-purple-400' : ''
+                    } ${isActive ? 'shadow-2xl scale-[1.02]' : 'shadow-md'}`}
                   >
-                    {plan.recommended && (
+                    {plan.badge && (
                       <span className="absolute -top-3 right-4 rounded-full bg-purple-600 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white shadow">
-                        Recommended
+                        {plan.badge}
                       </span>
                     )}
-                    <h3 className="mb-2 text-2xl font-bold text-gray-800">{plan.title}</h3>
-                    <p className="mb-4 text-gray-600">{plan.description}</p>
-                    <div className="mb-4 text-4xl font-extrabold text-purple-600">
-                      {plan.priceLabel}
-                      <span className="ml-1 align-middle text-lg font-normal text-gray-600">/mo</span>
+                    <div>
+                      <h3 className="mb-1 text-2xl font-extrabold text-gray-900">{plan.title}</h3>
+                      <p className="mb-3 text-sm font-medium text-purple-700">{plan.subtitle}</p>
+                      <p className="mb-4 text-xs text-gray-600">{plan.description}</p>
+                      <div className="mb-4 text-4xl font-extrabold text-purple-600">
+                        {plan.priceLabel}
+                        <span className="ml-1 text-base font-normal text-gray-600">/mo</span>
+                      </div>
+
+                      {/* Episode Age Distribution Box */}
+                      <div className="mb-5 rounded-xl border border-purple-200 bg-white/90 p-4 shadow-xs">
+                        <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-purple-800 flex items-center gap-1">
+                          <span>🎬</span> Episode Age Distribution
+                        </h4>
+                        <div className="space-y-2 text-xs font-semibold">
+                          <div className="flex items-center justify-between text-gray-800">
+                            <span>Ages 2 & 3</span>
+                            <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-green-800 font-bold">
+                              {plan.ageBreakdown.toddler}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-gray-800">
+                            <span>Ages 4 & 5</span>
+                            <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-blue-800 font-bold">
+                              {plan.ageBreakdown.preK}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-gray-800">
+                            <span>Ages 6 - 10</span>
+                            <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-purple-800 font-bold">
+                              {plan.ageBreakdown.schoolAge}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <ul className="mb-4 space-y-2 text-xs">
+                        {plan.features.map((feature) => (
+                          <li key={feature} className="flex items-center text-gray-700 font-medium">
+                            <span className="mr-2 text-green-600">✔</span>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <ul className="mb-2 space-y-2">
-                      {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-center text-gray-700">
-                          <span className="mr-2 text-green-600">✔</span>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
                     {renderPlanActions(plan)}
                   </AnimatedCard>
                 );

@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { RootState, AppDispatch } from '../../store';
 import { logout } from '../../store/authSlice';
 import BouncyButton from '../BouncyButton';
@@ -10,192 +10,198 @@ const Header: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     dispatch(logout());
+    setMobileMenuOpen(false);
     navigate('/login');
   };
 
   return (
     <motion.header 
-      className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 shadow-rainbow"
+      className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white shadow-rainbow sticky top-0 z-50"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 100 }}
     >
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center space-x-2 hover:scale-110 transform transition-transform">
-            <motion.span
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="text-2xl"
-            >
-              🌟
-            </motion.span>
-            <span className="text-3xl font-bold text-white drop-shadow-lg">
-              Character Matters
-            </span>
-            <motion.span
-              animate={{ rotate: [0, -10, 10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="text-2xl"
-            >
-              🎨
-            </motion.span>
+      <div className="container mx-auto px-4 py-2.5">
+        <div className="flex justify-between items-center h-14 md:h-16">
+          <Link to="/" className="flex-1 flex items-center h-full mr-2 max-w-[200px] sm:max-w-xs md:max-w-md hover:scale-[1.02] transform transition-transform">
+            <img
+              src="/images/header-logo.jpg"
+              alt="Character Matters"
+              className="h-10 sm:h-12 md:h-14 w-full object-contain object-left rounded-lg drop-shadow-md"
+            />
           </Link>
 
-          <nav className="hidden md:flex space-x-4">
-            <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                to="/"
-                className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
-              >
-                🏠 Home
-              </Link>
-            </motion.div>
+          {/* Desktop Navigation */}
+          <nav className="hidden xl:flex space-x-3 items-center">
+            <Link to="/" className="text-white font-bold hover:text-yellow-200 px-2 py-1.5 rounded-md text-sm drop-shadow">
+              🏠 Home
+            </Link>
             {isAuthenticated && (
-              <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
-                <Link
-                  to="/dashboard"
-                  className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
-                >
-                  📊 Dashboard
-                </Link>
-              </motion.div>
+              <Link to="/dashboard" className="text-white font-bold hover:text-yellow-200 px-2 py-1.5 rounded-md text-sm drop-shadow">
+                📊 Dashboard
+              </Link>
             )}
             {isAuthenticated && (
-              <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
-                <Link
-                  to="/profile"
-                  className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
-                >
-                  👤 Profile
-                </Link>
-              </motion.div>
+              <Link to="/profile" className="text-white font-bold hover:text-yellow-200 px-2 py-1.5 rounded-md text-sm drop-shadow">
+                👤 Profile
+              </Link>
             )}
-            <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                to="/about"
-                className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
-              >
-                📖 About
-              </Link>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                to="/services"
-                className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
-              >
-                🎯 Services
-              </Link>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                to="/videos"
-                className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
-              >
-                🎬 Videos
-              </Link>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                to="/products"
-                className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
-              >
-                📚 Books
-              </Link>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                to="/ebooks"
-                className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
-              >
-                📚 eBooks
-              </Link>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                to="/gallery"
-                className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
-              >
-                🖼️ Gallery
-              </Link>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                to="/team"
-                className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
-              >
-                👥 Team
-              </Link>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                to="/contact"
-                className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
-              >
-                📞 Contact
-              </Link>
-            </motion.div>
+            <Link to="/about" className="text-white font-bold hover:text-yellow-200 px-2 py-1.5 rounded-md text-sm drop-shadow">
+              📖 About
+            </Link>
+            <Link to="/services" className="text-white font-bold hover:text-yellow-200 px-2 py-1.5 rounded-md text-sm drop-shadow">
+              🎯 Services
+            </Link>
+            <Link to="/videos" className="text-white font-bold hover:text-yellow-200 px-2 py-1.5 rounded-md text-sm drop-shadow">
+              🎬 Videos
+            </Link>
+            <Link to="/products" className="text-white font-bold hover:text-yellow-200 px-2 py-1.5 rounded-md text-sm drop-shadow">
+              📚 Books
+            </Link>
+            <Link to="/ebooks" className="text-white font-bold hover:text-yellow-200 px-2 py-1.5 rounded-md text-sm drop-shadow">
+              📚 eBooks
+            </Link>
+            <Link to="/gallery" className="text-white font-bold hover:text-yellow-200 px-2 py-1.5 rounded-md text-sm drop-shadow">
+              🖼️ Gallery
+            </Link>
+            <Link to="/team" className="text-white font-bold hover:text-yellow-200 px-2 py-1.5 rounded-md text-sm drop-shadow">
+              👥 Team
+            </Link>
+            <Link to="/contact" className="text-white font-bold hover:text-yellow-200 px-2 py-1.5 rounded-md text-sm drop-shadow">
+              📞 Contact
+            </Link>
             {user?.role === 'admin' && (
-              <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
-                <Link
-                  to="/admin"
-                  className="text-white font-bold hover:text-yellow-200 px-2 py-2 rounded-md text-base drop-shadow"
-                >
-                  ⚙️ Admin
-                </Link>
-              </motion.div>
+              <Link to="/admin" className="text-white font-bold hover:text-yellow-200 px-2 py-1.5 rounded-md text-sm drop-shadow">
+                ⚙️ Admin
+              </Link>
             )}
           </nav>
 
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:block">
-              <input
-                type="text"
-                placeholder="Search videos, books..."
-                className="px-4 py-2 rounded-full bg-white/20 text-white placeholder-white/70 backdrop-blur-sm border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
-              />
-            </div>
+          {/* Desktop Right Actions */}
+          <div className="hidden md:flex items-center space-x-3">
             {isAuthenticated ? (
               <>
-                <motion.span 
-                  className="text-white font-bold bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm"
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  👤 Hello, {user?.name}!
-                </motion.span>
-                <BouncyButton
-                  onClick={handleLogout}
-                  variant="danger"
-                  className="text-sm px-6 py-2"
-                >
+                <span className="text-white font-bold bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm text-sm">
+                  👤 {user?.name}
+                </span>
+                <BouncyButton onClick={handleLogout} variant="danger" className="text-xs px-4 py-1.5">
                   👋 Logout
                 </BouncyButton>
               </>
             ) : (
               <>
-                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-                  <Link
-                    to="/login"
-                    className="text-white font-bold hover:text-yellow-200 px-3 py-2 rounded-md text-lg"
-                  >
-                    🔑 Login
-                  </Link>
-                </motion.div>
-                <BouncyButton
-                  onClick={() => navigate('/register')}
-                  variant="success"
-                  className="text-sm px-6 py-2"
-                >
+                <Link to="/login" className="text-white font-bold hover:text-yellow-200 px-3 py-1.5 text-sm">
+                  🔑 Login
+                </Link>
+                <BouncyButton onClick={() => navigate('/register')} variant="success" className="text-xs px-4 py-1.5">
                   ✨ Sign Up
                 </BouncyButton>
               </>
             )}
           </div>
+
+          {/* Mobile Menu Hamburger Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="xl:hidden p-2 rounded-lg bg-white/20 hover:bg-white/30 focus:outline-none transition-colors"
+            aria-label="Toggle Mobile Navigation"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
+
+        {/* Mobile Navigation Drawer */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="xl:hidden mt-2 pt-2 border-t border-white/20 flex flex-col space-y-1.5 overflow-hidden"
+            >
+              <Link to="/" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded-lg font-semibold hover:bg-white/10 text-base">
+                🏠 Home
+              </Link>
+              {isAuthenticated && (
+                <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded-lg font-semibold hover:bg-white/10 text-base">
+                  📊 Dashboard
+                </Link>
+              )}
+              {isAuthenticated && (
+                <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded-lg font-semibold hover:bg-white/10 text-base">
+                  👤 Profile
+                </Link>
+              )}
+              <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded-lg font-semibold hover:bg-white/10 text-base">
+                📖 About
+              </Link>
+              <Link to="/services" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded-lg font-semibold hover:bg-white/10 text-base">
+                🎯 Services
+              </Link>
+              <Link to="/videos" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded-lg font-semibold hover:bg-white/10 text-base">
+                🎬 Videos
+              </Link>
+              <Link to="/products" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded-lg font-semibold hover:bg-white/10 text-base">
+                📚 Books
+              </Link>
+              <Link to="/ebooks" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded-lg font-semibold hover:bg-white/10 text-base">
+                📚 eBooks
+              </Link>
+              <Link to="/gallery" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded-lg font-semibold hover:bg-white/10 text-base">
+                🖼️ Gallery
+              </Link>
+              <Link to="/team" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded-lg font-semibold hover:bg-white/10 text-base">
+                👥 Team
+              </Link>
+              <Link to="/contact" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded-lg font-semibold hover:bg-white/10 text-base">
+                📞 Contact
+              </Link>
+              {user?.role === 'admin' && (
+                <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded-lg font-semibold hover:bg-white/10 text-base">
+                  ⚙️ Admin
+                </Link>
+              )}
+
+              <div className="pt-2 border-t border-white/20">
+                {isAuthenticated ? (
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left py-2 px-3 rounded-lg font-semibold bg-red-500 text-white"
+                  >
+                    👋 Logout
+                  </button>
+                ) : (
+                  <div className="flex gap-2 pt-1">
+                    <Link
+                      to="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex-1 py-2 px-3 text-center rounded-lg font-semibold bg-white/20 hover:bg-white/30 text-white"
+                    >
+                      🔑 Login
+                    </Link>
+                    <Link
+                      to="/register"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex-1 py-2 px-3 text-center rounded-lg font-semibold bg-green-500 hover:bg-green-600 text-white"
+                    >
+                      ✨ Sign Up
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.header>
   );

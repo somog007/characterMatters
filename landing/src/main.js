@@ -36,27 +36,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 3. Pricing Toggle Switch (Monthly vs Annual)
   const pricingToggle = document.getElementById('pricingToggle');
-  const heroPrice = document.getElementById('heroPrice');
-  const heroPeriod = document.getElementById('heroPeriod');
-  const schoolPrice = document.getElementById('schoolPrice');
-  const schoolPeriod = document.getElementById('schoolPeriod');
+  const packagePrices = {
+    pkg1: { monthly: '25', annual: '19.99' },
+    pkg2: { monthly: '20', annual: '15.99' },
+    pkg3: { monthly: '16', annual: '12.99' },
+    pkg4: { monthly: '10', annual: '7.99' },
+    pkg5: { monthly: '7', annual: '5.49' },
+    pkg6: { monthly: '5', annual: '3.99' },
+  };
 
   if (pricingToggle) {
     pricingToggle.addEventListener('change', (e) => {
       const isAnnual = e.target.checked;
 
-      if (isAnnual) {
-        // Annual pricing with 25% discount
-        if (heroPrice) heroPrice.textContent = '7.99';
-        if (heroPeriod) heroPeriod.textContent = '/ month billed annually';
-        if (schoolPrice) schoolPrice.textContent = '19.99';
-        if (schoolPeriod) schoolPeriod.textContent = '/ month billed annually';
-      } else {
-        // Standard monthly pricing
-        if (heroPrice) heroPrice.textContent = '10.99';
-        if (heroPeriod) heroPeriod.textContent = '/ month';
-        if (schoolPrice) schoolPrice.textContent = '26.99';
-        if (schoolPeriod) schoolPeriod.textContent = '/ month';
+      for (let i = 1; i <= 6; i++) {
+        const priceEl = document.getElementById(`pkg${i}Price`);
+        const periodEl = document.getElementById(`pkg${i}Period`);
+        const data = packagePrices[`pkg${i}`];
+
+        if (priceEl && data) {
+          priceEl.textContent = isAnnual ? data.annual : data.monthly;
+        }
+        if (periodEl) {
+          periodEl.textContent = isAnnual ? '/ month billed annually' : '/ month';
+        }
       }
     });
   }

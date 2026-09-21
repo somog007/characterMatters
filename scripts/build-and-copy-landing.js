@@ -8,7 +8,7 @@ const webPublicLandingDir = path.join(rootDir, 'web', 'public', 'landing');
 
 try {
   // Check if landing dependencies need to be installed (e.g. on Netlify build containers)
-  if (!fs.existsSync(path.join(landingDir, 'node_modules'))) {
+  if (!fs.existsSync(path.join(landingDir, 'node_modules', 'postcss'))) {
     console.log('📦 Installing landing page dependencies on build server...');
     execSync('npm install --no-audit --no-fund', { cwd: landingDir, stdio: 'inherit' });
   }

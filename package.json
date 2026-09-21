@@ -11,7 +11,9 @@
     "dev:backend": "npm --prefix backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
     "build": "npm --prefix backend run build && npm --prefix web run build && npm --prefix landing run build",
-    "install:all": "npm --prefix backend install && npm --prefix frontend install && npm --prefix web install && npm --prefix landing install"
+    "install:all": "npm --prefix backend install && npm --prefix frontend install && npm --prefix web install && npm --prefix landing install",
+    "prisma:generate": "prisma generate",
+    "prisma:deploy": "prisma migrate deploy"
   },
   "workspaces": [
     "backend",

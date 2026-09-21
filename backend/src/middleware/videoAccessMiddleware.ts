@@ -60,11 +60,17 @@ export const authorizeVideoCategoryAccess = async (req: AuthRequest, res: Respon
           if (categoryObj) {
             const planTiers: Record<string, string[]> = {
               package_6: ['free'],
+              bronze: ['free'],
               package_5: ['free', 'basic'],
+              silver: ['free', 'basic'],
               package_4: ['free', 'basic'],
+              gold: ['free', 'basic'],
               package_3: ['free', 'basic', 'premium'],
+              sapphire: ['free', 'basic', 'premium'],
               package_2: ['free', 'basic', 'premium'],
+              diamond: ['free', 'basic', 'premium'],
               package_1: ['free', 'basic', 'premium', 'enterprise'],
+              platinum: ['free', 'basic', 'premium', 'enterprise'],
               basic: ['free', 'basic'],
               premium: ['free', 'basic', 'premium'],
               enterprise: ['free', 'basic', 'premium', 'enterprise']

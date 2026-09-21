@@ -18,5 +18,8 @@
     "frontend",
     "web",
     "landing"
-  ]
+  ],
+  "dependencies": {
+    "cloudinary": "^2.11.0"
+  }
 }

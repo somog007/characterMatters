@@ -21,19 +21,15 @@ const Footer: React.FC = () => {
               Raising impeccable leaders of sound character through education, entertainment, and inspiration since 2012.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://facebook.com/charactermattersng" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label="Facebook">
                 <span className="sr-only">Facebook</span>
                 📘
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <span className="sr-only">Twitter</span>
-                🐦
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://instagram.com/charactermattersng" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label="Instagram">
                 <span className="sr-only">Instagram</span>
                 📷
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://www.youtube.com/channel/UCX8jyQwm3ofvKuXttchHdJw" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label="YouTube">
                 <span className="sr-only">YouTube</span>
                 📺
               </a>

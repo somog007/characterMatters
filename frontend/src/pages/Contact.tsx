@@ -69,23 +69,9 @@ const Contact: React.FC = () => {
                   </div>
                 </motion.a>
 
-                <motion.a
-                  href="https://twitter.com/charactermatters"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-6 bg-cyan-100 rounded-2xl border-4 border-cyan-300 hover:shadow-xl transition-shadow"
-                  whileHover={{ scale: 1.05, x: 10 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="text-5xl">🐦</span>
-                  <div>
-                    <h3 className="text-2xl font-bold text-cyan-600">Twitter</h3>
-                    <p className="text-gray-700">Follow us on Twitter</p>
-                  </div>
-                </motion.a>
 
                 <motion.a
-                  href="https://youtube.com/@charactermatters"
+                  href="https://www.youtube.com/channel/UCX8jyQwm3ofvKuXttchHdJw"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-4 p-6 bg-red-100 rounded-2xl border-4 border-red-300 hover:shadow-xl transition-shadow"
@@ -134,12 +120,6 @@ const Contact: React.FC = () => {
                         className="block text-xl text-gray-700 hover:text-purple-600 font-semibold"
                       >
                         📞 08028289610
-                      </a>
-                      <a 
-                        href="tel:"
-                        className="block text-xl text-gray-700 hover:text-purple-600 font-semibold"
-                      >
-                        
                       </a>
                     </div>
                   </div>

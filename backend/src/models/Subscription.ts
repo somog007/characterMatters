@@ -2,9 +2,9 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ISubscription extends Document {
   user: mongoose.Types.ObjectId;
-  plan: 'basic' | 'premium' | 'enterprise' | string;
+  plan: 'platinum' | 'diamond' | 'sapphire' | 'gold' | 'silver' | 'bronze' | 'package_1' | 'package_2' | 'package_3' | 'package_4' | 'package_5' | 'package_6' | string;
   status: 'active' | 'canceled' | 'expired' | 'pending';
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'monthly' | 'yearly' | 'academic_session';
   price: number;
   startDate: Date;
   endDate: Date;
@@ -31,8 +31,8 @@ const subscriptionSchema = new Schema<ISubscription>({
   },
   billingCycle: { 
     type: String, 
-    enum: ['monthly', 'yearly'], 
-    default: 'monthly'
+    enum: ['monthly', 'yearly', 'academic_session'], 
+    default: 'academic_session'
   },
   price: { type: Number, default: 0 },
   startDate: { type: Date, default: Date.now },

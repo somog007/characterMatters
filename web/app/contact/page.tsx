@@ -32,12 +32,9 @@ export default function Contact() {
           <AnimatedCard delay={0.2} className="bg-gradient-to-br from-brand-yellow-100 to-brand-orange-100">
             <div className="text-5xl mb-4 text-center">📱</div>
             <h3 className="text-2xl font-bold mb-4 text-center text-brand-purple-600">Phone</h3>
-            <p className="text-lg text-center space-y-2">
+            <p className="text-lg text-center font-bold">
               <a href="tel:08028289610" className="block text-gray-700 hover:text-brand-purple-600">
                 08028289610
-              </a>
-              <a href="tel:0813..." className="block text-gray-700 hover:text-brand-purple-600">
-                0813...
               </a>
             </p>
           </AnimatedCard>
@@ -48,9 +45,9 @@ export default function Contact() {
             <h2 className="text-3xl font-bold mb-6 text-center text-brand-purple-500">
               Connect With Us on Social Media 🌐
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
               <a 
-                href="https://facebook.com" 
+                href="https://facebook.com/charactermattersng" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="group bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all hover:scale-105"
@@ -66,7 +63,7 @@ export default function Contact() {
                 <p className="font-bold text-brand-purple-600 text-center">Facebook</p>
               </a>
               <a 
-                href="https://instagram.com" 
+                href="https://instagram.com/charactermattersng" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="group bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all hover:scale-105"
@@ -82,23 +79,7 @@ export default function Contact() {
                 <p className="font-bold text-brand-orange-500 text-center">Instagram</p>
               </a>
               <a 
-                href="https://twitter.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="group bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all hover:scale-105"
-              >
-                <div className="relative w-16 h-16 mx-auto mb-3">
-                  <Image 
-                    src="/images/social/twitter.svg" 
-                    alt="Twitter / X" 
-                    fill
-                    className="object-contain group-hover:scale-110 transition-transform"
-                  />
-                </div>
-                <p className="font-bold text-brand-purple-700 text-center">Twitter</p>
-              </a>
-              <a 
-                href="https://youtube.com" 
+                href="https://www.youtube.com/channel/UCX8jyQwm3ofvKuXttchHdJw" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="group bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all hover:scale-105"
@@ -112,22 +93,6 @@ export default function Contact() {
                   />
                 </div>
                 <p className="font-bold text-brand-purple-500 text-center">YouTube</p>
-              </a>
-              <a 
-                href="https://linkedin.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="group bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all hover:scale-105"
-              >
-                <div className="relative w-16 h-16 mx-auto mb-3">
-                  <Image 
-                    src="/images/social/linkedin.svg" 
-                    alt="LinkedIn" 
-                    fill
-                    className="object-contain group-hover:scale-110 transition-transform"
-                  />
-                </div>
-                <p className="font-bold text-brand-yellow-600 text-center">LinkedIn</p>
               </a>
             </div>
           </AnimatedCard>

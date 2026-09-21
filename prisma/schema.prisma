@@ -1,0 +1,170 @@
+// Prisma schema for Character Matters (PostgreSQL)
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  PARENT
+  TEACHER
+  SCHOOL_ADMIN
+  ADMIN
+}
+
+enum AgeGroup {
+  TODDLER    // Ages 2 & 3
+  PRE_K      // Ages 4 & 5
+  SCHOOL_AGE // Ages 6 - 10
+}
+
+enum AccessTier {
+  BRONZE
+  SILVER
+  GOLD
+  SAPPHIRE
+  DIAMOND
+  PLATINUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PENDING
+  CANCELED
+  EXPIRED
+}
+
+enum BillingCycle {
+  ACADEMIC_SESSION
+  MONTHLY
+  YEARLY
+}
+
+enum PaymentProvider {
+  PAYSTACK
+  STRIPE
+  MANUAL
+}
+
+model User {
+  id                   String            @id @default(uuid())
+  email                String            @unique
+  passwordHash         String
+  fullName             String
+  role                 Role              @default(USER)
+  status               String            @default("active")
+  schoolName           String?
+  phone                String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  subscription         Subscription?
+  childProfiles        ChildProfile[]
+  paystackTransactions PaystackTransaction[]
+  securityLogs         SecurityLog[]
+
+  @@map("users")
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  userId               String             @unique
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                 String             // 'platinum' | 'diamond' | 'sapphire' | 'gold' | 'silver' | 'bronze'
+  status               SubscriptionStatus @default(PENDING)
+  billingCycle         BillingCycle       @default(ACADEMIC_SESSION)
+  priceAmountNgn       Decimal            @db.Decimal(12, 2)
+  startDate            DateTime           @default(now())
+  endDate              DateTime?
+  paystackCustomerCode String?
+  paystackSubscriptionCode String?
+  paymentProvider      PaymentProvider    @default(PAYSTACK)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@map("subscriptions")
+}
+
+model ChildProfile {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  ageGroup  AgeGroup
+  avatarUrl String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  progress  LessonProgress[]
+
+  @@map("child_profiles")
+}
+
+model Lesson {
+  id             String       @id @default(uuid())
+  title          String
+  description    String?
+  ageGroup       AgeGroup
+  accessTier     AccessTier   @default(BRONZE)
+  videoUrl       String       // Cloudinary Video URL / HLS Stream
+  thumbnailUrl   String?      // Cloudinary Image URL
+  worksheetUrl   String?      // Cloudinary PDF URL
+  durationSeconds Int         @default(0)
+  isPublished    Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  progressRecords LessonProgress[]
+
+  @@map("lessons")
+}
+
+model LessonProgress {
+  id             String       @id @default(uuid())
+  childProfileId String
+  childProfile   ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  lessonId       String
+  lesson         Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed      Boolean      @default(false)
+  lastPositionSec Int         @default(0)
+  watchedSeconds Int          @default(0)
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([childProfileId, lessonId])
+  @@map("lesson_progress")
+}
+
+model PaystackTransaction {
+  id             String        @id @default(uuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reference      String        @unique
+  amountNgn      Decimal       @db.Decimal(12, 2)
+  status         String        // 'success' | 'failed' | 'abandoned'
+  planId         String
+  channel        String?
+  paidAt         DateTime?
+  rawWebhookData Json?
+  createdAt      DateTime      @default(now())
+
+  @@map("paystack_transactions")
+}
+
+model SecurityLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  eventType String
+  severity  String   @default("info")
+  ipAddress String
+  userAgent String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@map("security_logs")
+}

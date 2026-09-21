@@ -20,6 +20,10 @@
     "landing"
   ],
   "dependencies": {
+    "@prisma/client": "^5.14.0",
     "cloudinary": "^2.11.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.14.0"
   }
 }

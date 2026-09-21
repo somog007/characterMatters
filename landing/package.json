@@ -12,5 +12,9 @@
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
     "vite": "^5.2.0"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.13.0",
+    "@rollup/rollup-linux-x64-musl": "^4.13.0"
   }
 }

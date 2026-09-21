@@ -14,3 +14,5 @@ dist/
 # Loose WhatsApp exports accidentally in repo root
 /WhatsApp Image*
 /WhatsApp Video*
+.prisma-composer/
+.alchemy/

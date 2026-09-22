@@ -25,25 +25,24 @@ export const UserCreateSchema = z.object({
 export const UserUpdateSchema = z.object({
   name: z.string().min(2).optional(),
   avatar: z.string().url().optional(),
-  role: z.enum(['admin', 'subscriber', 'free-user']).optional(),
+  role: z.enum(['USER', 'PARENT', 'TEACHER', 'SCHOOL_ADMIN', 'ADMIN']).optional(),
 });
 
 export const VideoCreateSchema = z.object({
   title: z.string().trim().min(3, 'Title required').max(200),
   description: z.string().trim().min(10, 'Description required').max(4000),
-  category: z.string().min(1, 'Category required'),
-  accessLevel: z.enum(['free', 'premium']),
-  duration: z.coerce.number().min(1),
-  price: z.coerce.number().min(0).optional(),
+  ageGroup: z.enum(['TODDLER', 'PRE_K', 'SCHOOL_AGE']).optional(),
+  accessTier: z.enum(['BRONZE', 'SILVER', 'GOLD', 'SAPPHIRE', 'DIAMOND', 'PLATINUM']).optional(),
+  videoUrl: z.string().url().optional(),
+  durationSeconds: z.coerce.number().min(0).optional(),
 });
 
 export const VideoUpdateSchema = z.object({
   title: z.string().trim().min(3).max(200).optional(),
   description: z.string().trim().min(10).max(4000).optional(),
-  category: z.string().min(1).optional(),
-  accessLevel: z.enum(['free', 'premium']).optional(),
-  duration: z.coerce.number().min(1).optional(),
-  price: z.coerce.number().min(0).optional(),
+  ageGroup: z.enum(['TODDLER', 'PRE_K', 'SCHOOL_AGE']).optional(),
+  accessTier: z.enum(['BRONZE', 'SILVER', 'GOLD', 'SAPPHIRE', 'DIAMOND', 'PLATINUM']).optional(),
+  durationSeconds: z.coerce.number().min(0).optional(),
 });
 
 export const GalleryCreateSchema = z.object({
@@ -53,31 +52,13 @@ export const GalleryCreateSchema = z.object({
   location: z.string().optional(),
   school: z.string().optional(),
   eventDate: z.string().optional(),
-  mediaType: z.enum(['image', 'video']),
-});
-
-export const SubscriptionCreateSchema = z.object({
-  planId: z.string().min(1),
-  priceId: z.string().min(1),
-  billingCycle: z.enum(['monthly', 'yearly']).optional(),
-});
-
-export const StripeCheckoutSchema = z.object({
-  planId: z.string().min(1),
-  priceId: z.string().min(1),
-  billingCycle: z.enum(['monthly', 'yearly']).optional(),
-  successUrl: z.string().url().optional(),
-  cancelUrl: z.string().url().optional(),
-});
-
-export const StripeFinalizeSchema = z.object({
-  sessionId: z.string().min(1),
+  mediaType: z.enum(['IMAGE', 'VIDEO']),
 });
 
 export const PaystackCheckoutSchema = z.object({
   planId: z.string().min(1),
   amount: z.coerce.number().positive(),
-  billingCycle: z.enum(['monthly', 'yearly']).optional(),
+  billingCycle: z.enum(['MONTHLY', 'YEARLY', 'ACADEMIC_SESSION']).optional(),
   callbackUrl: z.string().url().optional(),
 });
 

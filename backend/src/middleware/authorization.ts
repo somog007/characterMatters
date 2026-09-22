@@ -1,9 +1,8 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth';
-import Video from '../models/Video';
-import Gallery from '../models/Gallery';
+import prisma from '../config/prisma';
 
-export const requireRole = (...roles: Array<'admin' | 'subscriber' | 'free-user'>) => {
+export const requireRole = (...roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -23,20 +22,17 @@ export const canManageVideo = async (req: AuthRequest, res: Response, next: Next
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    if (req.user.role === 'admin') {
+    if (req.user.role === 'ADMIN') {
       return next();
     }
 
-    const video = await Video.findById(req.params.id).select('createdBy');
+    const video = await prisma.lesson.findUnique({ where: { id: req.params.id } });
     if (!video) {
       return res.status(404).json({ message: 'Video not found' });
     }
 
-    if (video.createdBy.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Forbidden: cannot manage this video' });
-    }
-
-    next();
+    // Only admins can manage videos for now
+    return res.status(403).json({ message: 'Forbidden: cannot manage this video' });
   } catch (error: any) {
     res.status(500).json({ message: 'Authorization error', error: error.message });
   }
@@ -48,20 +44,16 @@ export const canManageGallery = async (req: AuthRequest, res: Response, next: Ne
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    if (req.user.role === 'admin') {
+    if (req.user.role === 'ADMIN') {
       return next();
     }
 
-    const item = await Gallery.findById(req.params.id).select('createdBy');
+    const item = await prisma.galleryItem.findUnique({ where: { id: req.params.id } });
     if (!item) {
       return res.status(404).json({ message: 'Gallery item not found' });
     }
 
-    if (item.createdBy.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Forbidden: cannot manage this gallery item' });
-    }
-
-    next();
+    return res.status(403).json({ message: 'Forbidden: cannot manage this gallery item' });
   } catch (error: any) {
     res.status(500).json({ message: 'Authorization error', error: error.message });
   }
@@ -72,7 +64,7 @@ export const canManageUser = (req: AuthRequest, res: Response, next: NextFunctio
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
-  if (req.user.role === 'admin' || req.user._id.toString() === req.params.id) {
+  if (req.user.role === 'ADMIN' || req.user.id === req.params.id) {
     return next();
   }
 

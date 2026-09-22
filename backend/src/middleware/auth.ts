@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import mongoose from 'mongoose';
-import User, { IUser } from '../models/User';
+import prisma from '../config/prisma';
+import type { User } from '@prisma/client';
 
 export interface AuthRequest extends Request {
-  user?: IUser & { _id: mongoose.Types.ObjectId };
+  user?: User;
   body: any;
   params: any;
   query: any;
@@ -19,13 +19,13 @@ export const auth = async (req: AuthRequest, res: Response, next: NextFunction) 
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-    const user = await User.findById(decoded.userId);
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
     
     if (!user) {
       return res.status(401).json({ message: 'Token is not valid' });
     }
 
-    req.user = user as IUser & { _id: mongoose.Types.ObjectId };
+    req.user = user;
     next();
   } catch (error) {
     res.status(401).json({ message: 'Token is not valid' });
@@ -36,7 +36,7 @@ export const adminAuth = async (req: AuthRequest, res: Response, next: NextFunct
   try {
     await auth(req, res, () => {});
     
-    if (req.user?.role !== 'admin') {
+    if (req.user?.role !== 'ADMIN') {
       return res.status(403).json({ message: 'Access denied. Admin rights required.' });
     }
     

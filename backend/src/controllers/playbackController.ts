@@ -1,10 +1,7 @@
 import { Response } from 'express';
 import crypto from 'crypto';
 import { AuthRequest } from '../middleware/auth';
-import PlaybackSession from '../models/PlaybackSession';
-import DeviceSession from '../models/DeviceSession';
-import WatermarkConfig from '../models/WatermarkConfig';
-import Video from '../models/Video';
+import prisma from '../config/prisma';
 
 export const createPlaybackSession = async (req: AuthRequest, res: Response) => {
   try {
@@ -16,47 +13,65 @@ export const createPlaybackSession = async (req: AuthRequest, res: Response) => 
 
     // 1. Enforce Concurrent Device Limits
     const maxDevices = user.maxAllowedDevices || 2;
-    const activeDeviceSessions = await DeviceSession.find({ 
-      user: user._id, 
-      isBlocked: false,
-      lastActive: { $gte: new Date(Date.now() - 15 * 60 * 1000) } // Active within 15 mins
+    const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000);
+
+    const activeDeviceSessions = await prisma.deviceSession.findMany({
+      where: {
+        userId: user.id,
+        isBlocked: false,
+        lastActive: { gte: fifteenMinAgo },
+      },
     });
 
     const isCurrentDeviceActive = activeDeviceSessions.some((d) => d.deviceId === deviceId);
 
     if (!isCurrentDeviceActive && activeDeviceSessions.length >= maxDevices) {
       return res.status(429).json({
-        message: `Device limit exceeded. Maximum ${maxDevices} active device(s) allowed per account. Please log out from another device.`
+        message: `Device limit exceeded. Maximum ${maxDevices} active device(s) allowed per account. Please log out from another device.`,
       });
     }
 
     // Register or update active device
-    await DeviceSession.findOneAndUpdate(
-      { user: user._id, deviceId },
-      { deviceName: userAgent.substring(0, 50), ipAddress, lastActive: new Date(), isBlocked: false },
-      { upsert: true, new: true }
-    );
+    await prisma.deviceSession.upsert({
+      where: { userId_deviceId: { userId: user.id, deviceId } },
+      update: {
+        deviceName: userAgent.substring(0, 50),
+        ipAddress,
+        lastActive: new Date(),
+        isBlocked: false,
+      },
+      create: {
+        userId: user.id,
+        deviceId,
+        deviceName: userAgent.substring(0, 50),
+        ipAddress,
+        lastActive: new Date(),
+        isBlocked: false,
+      },
+    });
 
-    const video = await Video.findById(videoId);
-    if (!video) return res.status(404).json({ message: 'Video not found' });
+    const lesson = await prisma.lesson.findUnique({ where: { id: videoId } });
+    if (!lesson) return res.status(404).json({ message: 'Video not found' });
 
     // 2. Generate Cryptographic Playback Session Token
     const rawToken = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000); // 4 Hours valid session
 
-    const playbackSession = await PlaybackSession.create({
-      user: user._id,
-      video: video._id,
-      sessionToken: rawToken,
-      ipAddress,
-      userAgent,
-      deviceId,
-      status: 'active',
-      expiresAt
+    await prisma.playbackSession.create({
+      data: {
+        userId: user.id,
+        lessonId: lesson.id,
+        sessionToken: rawToken,
+        ipAddress,
+        userAgent,
+        deviceId,
+        status: 'active',
+        expiresAt,
+      },
     });
 
     // 3. Generate Signed HLS Manifest URL
-    const hlsPath = video.hlsManifestPath || video.videoURL;
+    const hlsPath = lesson.hlsManifestPath || lesson.videoUrl;
     const signingSecret = process.env.CDN_SIGNING_SECRET || 'char-matters-cdn-secret-key-2026';
     const tokenExp = Math.floor(Date.now() / 1000) + 120; // 2 minute manifest loading window
 
@@ -68,11 +83,13 @@ export const createPlaybackSession = async (req: AuthRequest, res: Response) => 
     const signedManifestUrl = `${hlsPath}?token=${signature}&sid=${rawToken}&exp=${tokenExp}`;
 
     // 4. Fetch Watermark Configuration
-    let wmConfig = await WatermarkConfig.findOne();
+    let wmConfig = await prisma.watermarkConfig.findFirst();
     if (!wmConfig) {
-      wmConfig = await WatermarkConfig.create({
-        logoUrl: '/assets/watermark-logo.png',
-        websiteDomain: 'CharacterMatters.com'
+      wmConfig = await prisma.watermarkConfig.create({
+        data: {
+          logoUrl: '/assets/watermark-logo.png',
+          websiteDomain: 'CharacterMatters.com',
+        },
       });
     }
 
@@ -86,10 +103,9 @@ export const createPlaybackSession = async (req: AuthRequest, res: Response) => 
         sessionHash: rawToken.substring(0, 8),
         opacity: wmConfig.opacity,
         fontSize: wmConfig.fontSize,
-        intervalSeconds: wmConfig.movementIntervalSeconds
-      }
+        intervalSeconds: wmConfig.movementIntervalSeconds,
+      },
     });
-
   } catch (error) {
     return res.status(500).json({ message: 'Failed to create playback session', error });
   }

@@ -30,4 +30,3 @@
   NEXT_TELEMETRY_DISABLED = "1"
   # Set these in the Netlify UI — do NOT commit real values here
   # NEXT_PUBLIC_API_URL = "https://your-backend.onrender.com/api"
-  # NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = "pk_live_..."

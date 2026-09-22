@@ -1,21 +1,23 @@
 import express from 'express';
 import {
-  getEBooks,
-  getEBook,
-  createEBook,
-  purchaseEBook,
+  getAllEbooks,
+  getEbookById,
+  createEbook,
+  updateEbook,
+  deleteEbook,
 } from '../controllers/ebookController';
 import { auth, adminAuth } from '../middleware/auth';
 import { upload } from '../middleware/upload';
 
 const router = express.Router();
 
-router.get('/', getEBooks);
-router.get('/:id', auth, getEBook);
+router.get('/', getAllEbooks);
+router.get('/:id', getEbookById);
 router.post('/', auth, adminAuth, upload.fields([
   { name: 'coverImage', maxCount: 1 },
   { name: 'ebookFile', maxCount: 1 },
-]), createEBook);
-router.post('/:id/purchase', auth, purchaseEBook);
+]), createEbook);
+router.put('/:id', auth, adminAuth, updateEbook);
+router.delete('/:id', auth, adminAuth, deleteEbook);
 
 export default router;

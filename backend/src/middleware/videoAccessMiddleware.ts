@@ -1,9 +1,16 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth';
-import Video from '../models/Video';
-import Category from '../models/Category';
-import Subscription from '../models/Subscription';
-import SecurityLog from '../models/SecurityLog';
+import prisma from '../config/prisma';
+
+// Access tier hierarchy — higher tiers include all lower tiers
+const TIER_HIERARCHY: Record<string, number> = {
+  BRONZE: 1,
+  SILVER: 2,
+  GOLD: 3,
+  SAPPHIRE: 4,
+  DIAMOND: 5,
+  PLATINUM: 6,
+};
 
 export const authorizeVideoCategoryAccess = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -14,8 +21,8 @@ export const authorizeVideoCategoryAccess = async (req: AuthRequest, res: Respon
       return res.status(401).json({ message: 'Authentication required' });
     }
 
-    // Admins bypass category authorization checks
-    if (user.role === 'admin') {
+    // Admins bypass authorization checks
+    if (user.role === 'ADMIN') {
       return next();
     }
 
@@ -23,80 +30,51 @@ export const authorizeVideoCategoryAccess = async (req: AuthRequest, res: Respon
       return res.status(403).json({ message: 'Account is inactive or suspended' });
     }
 
-    const video = await Video.findById(videoId).populate('category');
+    const video = await prisma.lesson.findUnique({
+      where: { id: videoId },
+      include: { category: true },
+    });
+
     if (!video || !video.isPublished) {
       return res.status(404).json({ message: 'Video not found or unavailable' });
     }
 
-    // 1. Free Videos
-    if (video.accessLevel === 'free') {
+    // 1. Free-tier videos are accessible to everyone
+    if (video.accessTier === 'BRONZE') {
       return next();
     }
 
-    const videoIdStr = (video as any)._id ? (video as any)._id.toString() : String(video._id);
+    // 2. Check active subscription tier
+    const subscription = await prisma.subscription.findUnique({
+      where: { userId: user.id },
+    });
 
-    // 2. Direct Video Permission Override
-    if (user.customVideoPermissions && user.customVideoPermissions.some((id) => id.toString() === videoIdStr)) {
-      return next();
-    }
+    if (subscription && subscription.status === 'ACTIVE') {
+      const isCurrent = !subscription.currentPeriodEnd || new Date(subscription.currentPeriodEnd) > new Date();
+      if (isCurrent) {
+        const userTierLevel = TIER_HIERARCHY[subscription.plan.toUpperCase()] || 0;
+        const videoTierLevel = TIER_HIERARCHY[video.accessTier] || 0;
 
-    const categoryObj = video.category as any;
-    const categoryId = categoryObj ? (categoryObj._id ? categoryObj._id.toString() : categoryObj.toString()) : null;
-
-    // 3. Direct Category Permission Override
-    if (categoryId && user.customCategoryPermissions && user.customCategoryPermissions.some((id) => id.toString() === categoryId)) {
-      return next();
-    }
-
-    // 4. Subscription Category & Plan Tier Check
-    if (user.subscription) {
-      const sub = await Subscription.findById(user.subscription);
-      if (sub && sub.status === 'active') {
-        const isCurrent = !sub.currentPeriodEnd || new Date(sub.currentPeriodEnd) > new Date();
-        if (isCurrent) {
-          if (!categoryId) return next();
-
-          const categoryObj = await Category.findById(categoryId);
-          if (categoryObj) {
-            const planTiers: Record<string, string[]> = {
-              package_6: ['free'],
-              bronze: ['free'],
-              package_5: ['free', 'basic'],
-              silver: ['free', 'basic'],
-              package_4: ['free', 'basic'],
-              gold: ['free', 'basic'],
-              package_3: ['free', 'basic', 'premium'],
-              sapphire: ['free', 'basic', 'premium'],
-              package_2: ['free', 'basic', 'premium'],
-              diamond: ['free', 'basic', 'premium'],
-              package_1: ['free', 'basic', 'premium', 'enterprise'],
-              platinum: ['free', 'basic', 'premium', 'enterprise'],
-              basic: ['free', 'basic'],
-              premium: ['free', 'basic', 'premium'],
-              enterprise: ['free', 'basic', 'premium', 'enterprise']
-            };
-
-            const allowedTiers = planTiers[sub.plan] || ['free', 'basic', 'premium', 'enterprise'];
-            if (allowedTiers.includes(categoryObj.accessTier || 'basic')) {
-              return next();
-            }
-          }
+        if (userTierLevel >= videoTierLevel) {
+          return next();
         }
       }
     }
 
     // Log Unauthorized Access Attempt
-    await SecurityLog.create({
-      user: user._id,
-      eventType: 'UNAUTHORIZED_VIDEO_ACCESS',
-      severity: 'high',
-      ipAddress: req.ip || '0.0.0.0',
-      userAgent: req.headers['user-agent'] || 'Unknown',
-      metadata: { videoId, categoryId }
+    await prisma.securityLog.create({
+      data: {
+        userId: user.id,
+        eventType: 'UNAUTHORIZED_VIDEO_ACCESS',
+        severity: 'high',
+        ipAddress: req.ip || '0.0.0.0',
+        userAgent: req.headers['user-agent'] || 'Unknown',
+        metadata: { videoId, accessTier: video.accessTier },
+      },
     });
 
-    return res.status(403).json({ 
-      message: 'Access Denied: Your current subscription package does not include access to this video category.' 
+    return res.status(403).json({
+      message: 'Access Denied: Your current subscription package does not include access to this video category.',
     });
 
   } catch (error) {

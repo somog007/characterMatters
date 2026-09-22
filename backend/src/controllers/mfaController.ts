@@ -1,7 +1,5 @@
-import crypto from 'crypto';
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
-import User from '../models/User';
 
 const mfaStore = new Map<string, { code: string; expiresAt: number }>();
 
@@ -11,7 +9,7 @@ export const requestMfaCode = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const userId = req.user._id.toString();
+    const userId = req.user.id;
     const code = (Math.floor(100000 + Math.random() * 900000)).toString();
     const expiresAt = Date.now() + 5 * 60 * 1000;
 
@@ -31,7 +29,7 @@ export const verifyMfaCode = async (req: AuthRequest, res: Response) => {
     }
 
     const { code } = req.body as { code: string };
-    const userId = req.user._id.toString();
+    const userId = req.user.id;
     const record = mfaStore.get(userId);
 
     if (!record || Date.now() > record.expiresAt) {

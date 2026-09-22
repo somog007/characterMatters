@@ -48,8 +48,12 @@ enum BillingCycle {
 
 enum PaymentProvider {
   PAYSTACK
-  STRIPE
   MANUAL
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
 }
 
 model User {
@@ -61,6 +65,9 @@ model User {
   status               String            @default("active")
   schoolName           String?
   phone                String?
+  avatar               String?
+  maxAllowedDevices    Int               @default(2)
+  paystackCustomerCode String?
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
 
@@ -68,25 +75,31 @@ model User {
   childProfiles        ChildProfile[]
   paystackTransactions PaystackTransaction[]
   securityLogs         SecurityLog[]
+  deviceSessions       DeviceSession[]
+  playbackSessions     PlaybackSession[]
 
   @@map("users")
 }
 
 model Subscription {
-  id                   String             @id @default(uuid())
-  userId               String             @unique
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan                 String             // 'platinum' | 'diamond' | 'sapphire' | 'gold' | 'silver' | 'bronze'
-  status               SubscriptionStatus @default(PENDING)
-  billingCycle         BillingCycle       @default(ACADEMIC_SESSION)
-  priceAmountNgn       Decimal            @db.Decimal(12, 2)
-  startDate            DateTime           @default(now())
-  endDate              DateTime?
-  paystackCustomerCode String?
+  id                       String             @id @default(uuid())
+  userId                   String             @unique
+  user                     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                     String             // 'platinum' | 'diamond' | 'sapphire' | 'gold' | 'silver' | 'bronze'
+  status                   SubscriptionStatus @default(PENDING)
+  billingCycle             BillingCycle       @default(ACADEMIC_SESSION)
+  priceAmountNgn           Decimal            @db.Decimal(12, 2)
+  startDate                DateTime           @default(now())
+  endDate                  DateTime?
+  currentPeriodStart       DateTime?
+  currentPeriodEnd         DateTime?
+  canceledAt               DateTime?
+  paystackCustomerCode     String?
   paystackSubscriptionCode String?
-  paymentProvider      PaymentProvider    @default(PAYSTACK)
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
+  providerReference        String?
+  paymentProvider          PaymentProvider    @default(PAYSTACK)
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
 
   @@map("subscriptions")
 }
@@ -112,7 +125,10 @@ model Lesson {
   description    String?
   ageGroup       AgeGroup
   accessTier     AccessTier   @default(BRONZE)
+  categoryId     String?
+  category       Category?    @relation(fields: [categoryId], references: [id])
   videoUrl       String       // Cloudinary Video URL / HLS Stream
+  hlsManifestPath String?     // HLS manifest path
   thumbnailUrl   String?      // Cloudinary Image URL
   worksheetUrl   String?      // Cloudinary PDF URL
   durationSeconds Int         @default(0)
@@ -120,7 +136,8 @@ model Lesson {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  progressRecords LessonProgress[]
+  progressRecords  LessonProgress[]
+  playbackSessions PlaybackSession[]
 
   @@map("lessons")
 }
@@ -138,6 +155,95 @@ model LessonProgress {
 
   @@unique([childProfileId, lessonId])
   @@map("lesson_progress")
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lessons     Lesson[]
+
+  @@map("categories")
+}
+
+model Ebook {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  author      String?
+  coverUrl    String?   // Cloudinary Image URL
+  fileUrl     String?   // Cloudinary PDF URL
+  price       Decimal  @db.Decimal(12, 2) @default(0)
+  accessTier  AccessTier @default(BRONZE)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("ebooks")
+}
+
+model GalleryItem {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  category    String    // 'Events' | 'School Seminars'
+  mediaType   MediaType
+  mediaUrl    String    // Cloudinary URL
+  thumbnailUrl String?
+  location    String?
+  school      String?
+  eventDate   DateTime?
+  isPublished Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("gallery_items")
+}
+
+model PlaybackSession {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId     String
+  lesson       Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  sessionToken String   @unique
+  ipAddress    String
+  userAgent    String
+  deviceId     String
+  status       String   @default("active") // 'active' | 'expired' | 'revoked'
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@map("playback_sessions")
+}
+
+model DeviceSession {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId   String
+  deviceName String?
+  ipAddress  String?
+  lastActive DateTime @default(now())
+  isBlocked  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, deviceId])
+  @@map("device_sessions")
+}
+
+model WatermarkConfig {
+  id                      String  @id @default(uuid())
+  logoUrl                 String  @default("/assets/watermark-logo.png")
+  websiteDomain           String  @default("CharacterMatters.com")
+  opacity                 Float   @default(0.3)
+  fontSize                Int     @default(14)
+  movementIntervalSeconds Int     @default(30)
+
+  @@map("watermark_config")
 }
 
 model PaystackTransaction {

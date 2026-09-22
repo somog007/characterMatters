@@ -1,19 +1,18 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '@/lib/api';
 
-type SubscriptionStatus = 'active' | 'canceled' | 'expired' | 'pending';
-type BillingCycle = 'monthly' | 'yearly';
-type Provider = 'stripe' | 'paystack' | null;
+type SubscriptionStatus = 'ACTIVE' | 'CANCELED' | 'EXPIRED' | 'PENDING';
+type BillingCycle = 'MONTHLY' | 'YEARLY' | 'ACADEMIC_SESSION';
 
 interface Subscription {
-  _id?: string;
+  id?: string;
   plan?: string;
   status: SubscriptionStatus;
   billingCycle?: BillingCycle;
-  price?: number;
+  priceAmountNgn?: number;
   currentPeriodStart?: string;
   currentPeriodEnd?: string;
-  paymentProvider?: Provider;
+  paymentProvider?: string;
 }
 
 interface SubscriptionState {
@@ -22,7 +21,6 @@ interface SubscriptionState {
   verifying: boolean;
   error: string | null;
   checkoutUrl: string | null;
-  providerInFlight: Provider;
   reference: string | null;
   successMessage: string | null;
 }
@@ -33,7 +31,6 @@ const initialState: SubscriptionState = {
   verifying: false,
   error: null,
   checkoutUrl: null,
-  providerInFlight: null,
   reference: null,
   successMessage: null,
 };
@@ -51,33 +48,6 @@ export const fetchSubscription = createAsyncThunk(
       return res.data as Subscription;
     } catch (error: unknown) {
       return rejectWithValue(handleError(error, 'Failed to fetch subscription'));
-    }
-  }
-);
-
-export const startStripeCheckout = createAsyncThunk(
-  'subscription/startStripeCheckout',
-  async (
-    payload: { planId: string; priceId: string; billingCycle?: BillingCycle },
-    { rejectWithValue }
-  ) => {
-    try {
-      const res = await api.post('/subscriptions/checkout/stripe', payload);
-      return res.data as { checkoutUrl: string; sessionId: string };
-    } catch (error: unknown) {
-      return rejectWithValue(handleError(error, 'Failed to start Stripe checkout'));
-    }
-  }
-);
-
-export const finalizeStripeCheckout = createAsyncThunk(
-  'subscription/finalizeStripeCheckout',
-  async (payload: { sessionId: string }, { rejectWithValue }) => {
-    try {
-      const res = await api.post('/subscriptions/checkout/stripe/complete', payload);
-      return res.data as { message: string; subscription: Subscription };
-    } catch (error: unknown) {
-      return rejectWithValue(handleError(error, 'Failed to finalize Stripe checkout'));
     }
   }
 );
@@ -129,7 +99,6 @@ const subscriptionSlice = createSlice({
   reducers: {
     clearCheckoutState(state) {
       state.checkoutUrl = null;
-      state.providerInFlight = null;
       state.reference = null;
       state.successMessage = null;
     },
@@ -149,42 +118,9 @@ const subscriptionSlice = createSlice({
         state.error = action.payload as string;
         state.data = null;
       })
-      .addCase(startStripeCheckout.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.providerInFlight = 'stripe';
-        state.successMessage = null;
-      })
-      .addCase(startStripeCheckout.fulfilled, (state, action) => {
-        state.loading = false;
-        state.checkoutUrl = action.payload.checkoutUrl;
-        state.reference = action.payload.sessionId;
-      })
-      .addCase(startStripeCheckout.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-        state.providerInFlight = null;
-      })
-      .addCase(finalizeStripeCheckout.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(finalizeStripeCheckout.fulfilled, (state, action) => {
-        state.loading = false;
-        state.data = action.payload.subscription;
-        state.providerInFlight = null;
-        state.checkoutUrl = null;
-        state.reference = null;
-        state.successMessage = action.payload.message;
-      })
-      .addCase(finalizeStripeCheckout.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
       .addCase(startPaystackCheckout.pending, (state) => {
         state.loading = true;
         state.error = null;
-        state.providerInFlight = 'paystack';
         state.successMessage = null;
       })
       .addCase(startPaystackCheckout.fulfilled, (state, action) => {
@@ -195,7 +131,6 @@ const subscriptionSlice = createSlice({
       .addCase(startPaystackCheckout.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-        state.providerInFlight = null;
       })
       .addCase(verifyPaystackCheckout.pending, (state) => {
         state.verifying = true;
@@ -206,7 +141,6 @@ const subscriptionSlice = createSlice({
         state.data = action.payload.subscription;
         state.checkoutUrl = null;
         state.reference = null;
-        state.providerInFlight = null;
         state.successMessage = action.payload.message;
       })
       .addCase(verifyPaystackCheckout.rejected, (state, action) => {
@@ -219,8 +153,7 @@ const subscriptionSlice = createSlice({
       })
       .addCase(cancelSubscription.fulfilled, (state) => {
         state.loading = false;
-        if (state.data) state.data.status = 'canceled';
-        state.providerInFlight = null;
+        if (state.data) state.data.status = 'CANCELED';
         state.reference = null;
         state.checkoutUrl = null;
       })

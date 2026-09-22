@@ -1,132 +1,91 @@
-import { Response } from 'express';
-import EBook from '../models/Ebook';
-import Order from '../models/Order';
-import User from '../models/User';
+import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
+import prisma from '../config/prisma';
 
-export const getEBooks = async (req: AuthRequest, res: Response) => {
+export const getAllEbooks = async (req: Request, res: Response) => {
   try {
-    const { page = 1, limit = 10, category, minPrice, maxPrice } = req.query;
-    
-    const filter: any = {};
-    if (category) filter.category = category;
-    if (minPrice || maxPrice) {
-      filter.price = {};
-      if (minPrice) filter.price.$gte = Number(minPrice);
-      if (maxPrice) filter.price.$lte = Number(maxPrice);
-    }
+    const { page = '1', limit = '20' } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
 
-    const ebooks = await EBook.find(filter)
-      .populate('category')
-      .populate('createdBy', 'name')
-      .limit(Number(limit) * 1)
-      .skip((Number(page) - 1) * Number(limit))
-      .sort({ createdAt: -1 });
-
-    const total = await EBook.countDocuments(filter);
+    const [ebooks, total] = await Promise.all([
+      prisma.ebook.findMany({
+        where: { isPublished: true },
+        skip,
+        take: Number(limit),
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.ebook.count({ where: { isPublished: true } }),
+    ]);
 
     res.json({
       ebooks,
+      page: Number(page),
       totalPages: Math.ceil(total / Number(limit)),
-      currentPage: Number(page),
       total,
     });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
-export const getEBook = async (req: AuthRequest, res: Response) => {
+export const getEbookById = async (req: Request, res: Response) => {
   try {
-    const ebook = await EBook.findById(req.params.id)
-      .populate('category')
-      .populate('createdBy', 'name avatar');
+    const ebook = await prisma.ebook.findUnique({ where: { id: req.params.id } });
+    if (!ebook) return res.status(404).json({ message: 'eBook not found' });
 
-    if (!ebook) {
-      return res.status(404).json({ message: 'EBook not found' });
-    }
-
-    // Check if user has purchased the ebook
-    let hasPurchased = false;
-    if (req.user) {
-      const order = await Order.findOne({
-        user: (req.user as any)._id,
-        eBook: ebook._id,
-        status: 'completed',
-      });
-      hasPurchased = !!order;
-    }
-
-    res.json({ ...ebook.toObject(), hasPurchased });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
+    res.json(ebook);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
-export const createEBook = async (req: AuthRequest, res: Response) => {
+export const createEbook = async (req: AuthRequest, res: Response) => {
   try {
-    const ebookData = {
-      ...req.body,
-      createdBy: (req.user as any)?._id,
-    };
+    const { title, description, author, price, accessTier, coverUrl, fileUrl } = req.body;
 
-    const ebook = new EBook(ebookData);
-    await ebook.save();
-
-    await ebook.populate('category');
-    await ebook.populate('createdBy', 'name');
+    const ebook = await prisma.ebook.create({
+      data: {
+        title,
+        description,
+        author,
+        price: price || 0,
+        accessTier: accessTier || 'BRONZE',
+        coverUrl,
+        fileUrl,
+      },
+    });
 
     res.status(201).json(ebook);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
-export const purchaseEBook = async (req: AuthRequest, res: Response) => {
+export const updateEbook = async (req: AuthRequest, res: Response) => {
   try {
-    const ebook = await EBook.findById(req.params.id);
-    
-    if (!ebook) {
-      return res.status(404).json({ message: 'EBook not found' });
-    }
+    const ebook = await prisma.ebook.findUnique({ where: { id: req.params.id } });
+    if (!ebook) return res.status(404).json({ message: 'eBook not found' });
 
-    // Check if already purchased
-    const existingOrder = await Order.findOne({
-      user: (req.user as any)?._id,
-      eBook: ebook._id,
-      status: 'completed',
+    const updated = await prisma.ebook.update({
+      where: { id: req.params.id },
+      data: req.body,
     });
 
-    if (existingOrder) {
-      return res.status(400).json({ message: 'EBook already purchased' });
-    }
+    res.json(updated);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
 
-    // Create order (payment will be handled by webhook)
-    const order = new Order({
-      user: (req.user as any)?._id,
-      eBook: ebook._id,
-      amount: ebook.price,
-      status: 'pending',
-    });
+export const deleteEbook = async (req: AuthRequest, res: Response) => {
+  try {
+    const ebook = await prisma.ebook.findUnique({ where: { id: req.params.id } });
+    if (!ebook) return res.status(404).json({ message: 'eBook not found' });
 
-    await order.save();
+    await prisma.ebook.delete({ where: { id: req.params.id } });
 
-    // In a real application, you would integrate with Stripe here
-    // For now, we'll simulate successful payment
-    order.status = 'completed';
-    await order.save();
-
-    // Add eBook to user's purchased collection
-    await User.findByIdAndUpdate((req.user as any)?._id, {
-      $addToSet: { purchasedEBooks: ebook._id },
-    });
-
-    // Increment sales count
-    ebook.salesCount = (ebook.salesCount || 0) + 1;
-    await ebook.save();
-
-    res.json({ message: 'Purchase successful', order });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
+    res.json({ message: 'eBook deleted successfully' });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

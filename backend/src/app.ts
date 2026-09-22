@@ -1,22 +1,19 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import mongoSanitize from 'express-mongo-sanitize';
 import compression from 'compression';
 import dotenv from 'dotenv';
 import path from 'path';
 import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
-import { errorHandler, AppError } from './middleware/errorHandler';
+import { errorHandler } from './middleware/errorHandler';
 import { requestLogger, logger } from './middleware/logger';
+import prisma from './config/prisma';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import videoRoutes from './routes/videos';
 import ebookRoutes from './routes/ebooks';
 import subscriptionRoutes from './routes/subscriptions';
-import paymentRoutes from './routes/payments';
 import galleryRoutes from './routes/gallery';
 import adminRoutes from './routes/admin';
 import mfaRoutes from './routes/mfa';
@@ -31,7 +28,7 @@ Sentry.init({
 });
 
 // Validate required environment variables early (non-fatal warnings so dev can start)
-const requiredEnv = ['JWT_SECRET', 'MONGODB_URI'];
+const requiredEnv = ['JWT_SECRET', 'DATABASE_URL'];
 requiredEnv.forEach((key) => {
   if (!process.env[key]) {
     logger.warn({ message: `Missing expected env var ${key}`, key });
@@ -42,7 +39,6 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
-app.use(mongoSanitize());
 
 // Rate limiting
 const limiter = rateLimit({
@@ -57,7 +53,7 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Static media uploads (local disk fallback when S3 is not configured)
+// Static media uploads (local disk fallback when Cloudinary is not configured)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Compression
@@ -87,13 +83,18 @@ app.use(requestLogger);
 app.get('/', (_req, res) => {
   res.status(200).json({ status: 'ok', name: 'Character Matters API', version: '1.0.0' });
 });
-app.get('/api/health', (_req, res) => {
-  const dbState = mongoose.connection.readyState; // 0=disconnected,1=connected,2=connecting,3=disconnecting
+app.get('/api/health', async (_req, res) => {
+  let dbStatus = 'disconnected';
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    dbStatus = 'connected';
+  } catch {
+    dbStatus = 'error';
+  }
   res.status(200).json({
     status: 'ok',
     uptime: process.uptime(),
-    dbState,
-    dbStateText: ['disconnected', 'connected', 'connecting', 'disconnecting'][dbState] || 'unknown',
+    database: dbStatus,
     timestamp: new Date().toISOString(),
   });
 });
@@ -104,28 +105,23 @@ app.use('/api/users', userRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/ebooks', ebookRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
-app.use('/api/payments', paymentRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/mfa', mfaRoutes);
 app.use('/api/playback', playbackRoutes);
-app.use('/api/videos', playbackRoutes);
 
 // Error handling
 app.use(errorHandler);
 
 export default app;
 
-// MongoDB connection & server start
-const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/video-ebook-platform';
-
+// Database connection & server start
 const startServer = async () => {
   try {
-    await mongoose.connect(MONGO_URI);
-    logger.info({ message: 'Connected to MongoDB', host: mongoose.connection.host });
+    await prisma.$connect();
+    logger.info({ message: 'Connected to PostgreSQL via Prisma' });
   } catch (error) {
-    logger.error({ message: 'MongoDB connection error', error });
-    // Do not exit immediately; allow health endpoint to reflect failure
+    logger.error({ message: 'PostgreSQL connection error', error });
   }
 
   const PORT = process.env.PORT || 5000;
@@ -138,8 +134,8 @@ const startServer = async () => {
     logger.warn({ message: 'Received shutdown signal', signal });
     server.close(() => {
       logger.info({ message: 'HTTP server closed' });
-      mongoose.connection.close(false).then(() => {
-        logger.info({ message: 'MongoDB connection closed' });
+      prisma.$disconnect().then(() => {
+        logger.info({ message: 'Database connection closed' });
         process.exit(0);
       });
     });

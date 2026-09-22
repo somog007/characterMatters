@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import crypto from 'crypto';
 import { AuthRequest } from '../middleware/auth';
-import PlaybackSession from '../models/PlaybackSession';
+import prisma from '../config/prisma';
 
 export const getHLSKey = async (req: AuthRequest, res: Response) => {
   try {
@@ -11,21 +11,21 @@ export const getHLSKey = async (req: AuthRequest, res: Response) => {
     }
 
     // Validate Playback Session
-    const session = await PlaybackSession.findOne({ 
-      sessionToken,
-      status: 'active',
-      expiresAt: { $gt: new Date() }
+    const session = await prisma.playbackSession.findUnique({
+      where: { sessionToken },
     });
 
-    if (!session) {
+    if (!session || session.status !== 'active' || session.expiresAt < new Date()) {
       return res.status(403).json({ message: 'Invalid or revoked playback session key request' });
     }
 
     const currentIp = req.ip || req.socket.remoteAddress || '0.0.0.0';
     // IP verification to prevent session sharing
     if (session.ipAddress !== currentIp && session.ipAddress !== '0.0.0.0') {
-      session.status = 'revoked';
-      await session.save();
+      await prisma.playbackSession.update({
+        where: { id: session.id },
+        data: { status: 'revoked' },
+      });
       return res.status(403).json({ message: 'IP address mismatch. Playback session revoked.' });
     }
 

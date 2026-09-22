@@ -1,7 +1,7 @@
 import express from 'express';
 import {
-  getVideos,
-  getVideo,
+  getAllVideos,
+  getVideoById,
   createVideo,
   updateVideo,
   deleteVideo,
@@ -14,9 +14,9 @@ import { VideoCreateSchema, VideoUpdateSchema } from '../middleware/validation';
 
 const router = express.Router();
 
-router.get('/', auth, getVideos);
-router.get('/:id', auth, getVideo);
-router.post('/', auth, requireRole('admin'), upload.fields([
+router.get('/', getAllVideos);
+router.get('/:id', getVideoById);
+router.post('/', auth, requireRole('ADMIN'), upload.fields([
   { name: 'thumbnail', maxCount: 1 },
   { name: 'video', maxCount: 1 },
 ]), validateBody(VideoCreateSchema), createVideo);

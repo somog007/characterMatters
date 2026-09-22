@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react';
+'use client';
+
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import api from '../services/api';
-import { useSelector } from 'react-redux';
-import { RootState } from '../store';
+import api from '@/lib/api';
+import { useAppSelector } from '@/store/hooks';
+import Link from 'next/link';
 
 interface UserWithRole {
-  _id: string;
-  name: string;
+  id: string;
+  fullName: string;
   email: string;
   role: string;
-  subscription?: any;
+  subscription?: { plan?: string; status?: string; endDate?: string };
   createdAt?: string;
 }
 
@@ -21,19 +23,21 @@ interface AdminMetrics {
   activeSubscriptions: number;
 }
 
-const AdminManagement: React.FC = () => {
-  const { user } = useSelector((state: RootState) => state.auth);
+type TabKey = 'overview' | 'users' | 'subscriptions';
+
+export default function AdminPage() {
+  const { user } = useAppSelector((s) => s.auth);
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTab, setSelectedTab] = useState<'overview' | 'users' | 'subscriptions'>('overview');
+  const [selectedTab, setSelectedTab] = useState<TabKey>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
 
   useEffect(() => {
-    if (user?.role !== 'admin') return;
+    if (user?.role !== 'admin' && user?.role !== 'ADMIN') return;
 
     const fetchAdminData = async () => {
       try {
@@ -61,27 +65,34 @@ const AdminManagement: React.FC = () => {
     try {
       await api.put(`/admin/users/${userId}/role`, { role: newRole });
       setUsers((prev) =>
-        prev.map((u) => (u._id === userId ? { ...u, role: newRole } : u))
+        prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
       );
-    } catch (err: any) {
+    } catch {
       setError('Failed to update user role');
     }
   };
 
-  if (user?.role !== 'admin') {
+  if (!user || (user.role !== 'admin' && user.role !== 'ADMIN')) {
     return <div className="container mx-auto p-6 text-center">Admin access required.</div>;
   }
 
   const filteredUsers = users.filter((u) => {
-    const matchesSearch = u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch =
+      u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       u.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter ? u.role === roleFilter : true;
     return matchesSearch && matchesRole;
   });
 
+  const tabs: TabKey[] = ['overview', 'users', 'subscriptions'];
+
   return (
     <div className="container mx-auto p-6">
-      <motion.h1 className="text-4xl font-bold mb-6" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+      <motion.h1
+        className="text-4xl font-bold mb-6"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+      >
         Admin Management
       </motion.h1>
 
@@ -89,7 +100,7 @@ const AdminManagement: React.FC = () => {
 
       {/* Tab Navigation */}
       <div className="flex gap-4 mb-6">
-        {(['overview', 'users', 'subscriptions'] as const).map((tab) => (
+        {tabs.map((tab) => (
           <button
             key={tab}
             onClick={() => setSelectedTab(tab)}
@@ -110,7 +121,7 @@ const AdminManagement: React.FC = () => {
         <>
           {/* Overview Tab */}
           {selectedTab === 'overview' && metrics && (
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
               {[
                 { label: 'Total Users', value: metrics.totalUsers, color: 'bg-blue-500' },
                 { label: 'Subscribers', value: metrics.totalSubscribers, color: 'bg-green-500' },
@@ -129,6 +140,15 @@ const AdminManagement: React.FC = () => {
                   <p className="text-3xl font-bold mt-2">{metric.value}</p>
                 </motion.div>
               ))}
+
+              <div className="col-span-full bg-white rounded-xl p-6 shadow mt-4">
+                <h3 className="text-2xl font-bold mb-2">Quick Links</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Link href="/gallery" className="text-blue-600 hover:underline">Manage Gallery</Link>
+                  <Link href="/videos" className="text-blue-600 hover:underline">Manage Videos</Link>
+                  <Link href="/products" className="text-blue-600 hover:underline">Manage eBooks</Link>
+                </div>
+              </div>
             </div>
           )}
 
@@ -149,9 +169,10 @@ const AdminManagement: React.FC = () => {
                   className="px-4 py-2 border rounded"
                 >
                   <option value="">All Roles</option>
-                  <option value="admin">Admin</option>
-                  <option value="subscriber">Subscriber</option>
-                  <option value="free-user">Free User</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="PARENT">Parent</option>
+                  <option value="TEACHER">Teacher</option>
+                  <option value="USER">User</option>
                 </select>
               </div>
 
@@ -168,18 +189,20 @@ const AdminManagement: React.FC = () => {
                   </thead>
                   <tbody>
                     {filteredUsers.map((u) => (
-                      <tr key={u._id} className="border-b hover:bg-gray-50">
-                        <td className="p-2">{u.name}</td>
+                      <tr key={u.id} className="border-b hover:bg-gray-50">
+                        <td className="p-2">{u.fullName}</td>
                         <td className="p-2">{u.email}</td>
                         <td className="p-2">
                           <select
                             value={u.role}
-                            onChange={(e) => handleRoleChange(u._id, e.target.value)}
+                            onChange={(e) => handleRoleChange(u.id, e.target.value)}
                             className="px-2 py-1 border rounded"
                           >
-                            <option value="free-user">Free User</option>
-                            <option value="subscriber">Subscriber</option>
-                            <option value="admin">Admin</option>
+                            <option value="USER">User</option>
+                            <option value="PARENT">Parent</option>
+                            <option value="TEACHER">Teacher</option>
+                            <option value="SCHOOL_ADMIN">School Admin</option>
+                            <option value="ADMIN">Admin</option>
                           </select>
                         </td>
                         <td className="p-2">{u.subscription?.plan || 'None'}</td>
@@ -198,22 +221,26 @@ const AdminManagement: React.FC = () => {
           {selectedTab === 'subscriptions' && (
             <div className="grid gap-4">
               {subscriptions.map((sub) => (
-                <div key={sub._id} className="bg-white p-4 rounded shadow">
+                <div key={sub.id} className="bg-white p-4 rounded shadow">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-bold">{sub.user?.name}</h3>
+                      <h3 className="font-bold">{sub.user?.fullName}</h3>
                       <p className="text-sm text-gray-600">{sub.user?.email}</p>
                       <p className="text-sm">Plan: {sub.plan} ({sub.billingCycle})</p>
                     </div>
                     <div className="text-right">
-                      <span className={`px-3 py-1 rounded text-white text-sm ${
-                        sub.status === 'active' ? 'bg-green-500' : 'bg-gray-500'
-                      }`}>
+                      <span
+                        className={`px-3 py-1 rounded text-white text-sm ${
+                          sub.status === 'ACTIVE' ? 'bg-green-500' : 'bg-gray-500'
+                        }`}
+                      >
                         {sub.status}
                       </span>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Expires: {new Date(sub.endDate).toLocaleDateString()}
-                      </p>
+                      {sub.endDate && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Expires: {new Date(sub.endDate).toLocaleDateString()}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -224,6 +251,4 @@ const AdminManagement: React.FC = () => {
       )}
     </div>
   );
-};
-
-export default AdminManagement;
+}

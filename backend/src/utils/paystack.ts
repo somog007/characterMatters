@@ -74,6 +74,7 @@ export const verifyPaystackTransaction = async (reference: string) => {
     reference: string;
     amount: number;
     currency: string;
+    channel?: string;
     paid_at: string;
     metadata?: Record<string, any>;
     customer?: {

@@ -5,8 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   fetchSubscription,
-  startStripeCheckout,
-  finalizeStripeCheckout,
   startPaystackCheckout,
   verifyPaystackCheckout,
   cancelSubscription,
@@ -18,10 +16,6 @@ import AnimatedCard from '@/components/AnimatedCard';
 import PageTransition from '@/components/PageTransition';
 import type { RootState } from '@/store';
 
-type ProviderOption = 'stripe' | 'paystack';
-
-type BillingCycle = 'monthly' | 'yearly';
-
 interface PlanConfig {
   id: string;
   title: string;
@@ -29,10 +23,7 @@ interface PlanConfig {
   totalEpisodes: number;
   description: string;
   priceLabel: string;
-  paystackLabel: string;
-  priceMonthly: number;
-  paystackAmount: number;
-  stripePriceId: string;
+  amount: number;
   badge?: string;
   recommended?: boolean;
   gradient: string;
@@ -52,10 +43,7 @@ const PLANS: PlanConfig[] = [
     totalEpisodes: 24,
     description: 'Comprehensive 24-lesson curriculum pack for full academic session',
     priceLabel: '₦1,200,000',
-    paystackLabel: '₦1,200,000 / session',
-    priceMonthly: 1200000,
-    paystackAmount: 1200000,
-    stripePriceId: 'price_platinum_session',
+    amount: 1200000,
     badge: 'Best Value (24 Lessons)',
     recommended: true,
     gradient: 'from-purple-100 via-pink-100 to-amber-100',
@@ -78,10 +66,7 @@ const PLANS: PlanConfig[] = [
     totalEpisodes: 18,
     description: 'Premium 18-lesson academic package for schools and families',
     priceLabel: '₦900,000',
-    paystackLabel: '₦900,000 / session',
-    priceMonthly: 900000,
-    paystackAmount: 900000,
-    stripePriceId: 'price_diamond_session',
+    amount: 900000,
     badge: 'Most Popular (18 Lessons)',
     gradient: 'from-blue-100 via-indigo-100 to-purple-100',
     ageBreakdown: {
@@ -103,10 +88,7 @@ const PLANS: PlanConfig[] = [
     totalEpisodes: 15,
     description: 'Advanced 15-lesson character building set',
     priceLabel: '₦750,000',
-    paystackLabel: '₦750,000 / session',
-    priceMonthly: 750000,
-    paystackAmount: 750000,
-    stripePriceId: 'price_sapphire_session',
+    amount: 750000,
     gradient: 'from-emerald-100 via-teal-100 to-cyan-100',
     ageBreakdown: {
       toddler: '5 episodes',
@@ -127,10 +109,7 @@ const PLANS: PlanConfig[] = [
     totalEpisodes: 9,
     description: 'Core 9-lesson package for key character values',
     priceLabel: '₦450,000',
-    paystackLabel: '₦450,000 / session',
-    priceMonthly: 450000,
-    paystackAmount: 450000,
-    stripePriceId: 'price_gold_session',
+    amount: 450000,
     gradient: 'from-amber-100 via-orange-100 to-yellow-100',
     ageBreakdown: {
       toddler: '3 episodes',
@@ -151,10 +130,7 @@ const PLANS: PlanConfig[] = [
     totalEpisodes: 6,
     description: 'Intermediate 6-lesson collection for essential values',
     priceLabel: '₦300,000',
-    paystackLabel: '₦300,000 / session',
-    priceMonthly: 300000,
-    paystackAmount: 300000,
-    stripePriceId: 'price_silver_session',
+    amount: 300000,
     gradient: 'from-rose-100 via-pink-100 to-purple-100',
     ageBreakdown: {
       toddler: '2 episodes',
@@ -175,10 +151,7 @@ const PLANS: PlanConfig[] = [
     totalEpisodes: 3,
     description: 'Sampler 3-lesson pack with 1 lesson per age group',
     priceLabel: '₦150,000',
-    paystackLabel: '₦150,000 / session',
-    priceMonthly: 150000,
-    paystackAmount: 150000,
-    stripePriceId: 'price_bronze_session',
+    amount: 150000,
     gradient: 'from-cyan-100 via-sky-100 to-blue-100',
     ageBreakdown: {
       toddler: '1 episode',
@@ -195,7 +168,6 @@ const PLANS: PlanConfig[] = [
 ];
 
 const DEFAULT_PLAN_ID = PLANS.find((plan) => plan.recommended)?.id ?? PLANS[0].id;
-const DEFAULT_BILLING: BillingCycle = 'monthly';
 
 function SubscribeContent() {
   const dispatch = useAppDispatch();
@@ -203,9 +175,7 @@ function SubscribeContent() {
   const searchParams = useSearchParams();
   const paramsHandled = useRef(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string>(DEFAULT_PLAN_ID);
-  const [selectedProvider, setSelectedProvider] = useState<ProviderOption>('stripe');
   const [localNotice, setLocalNotice] = useState<string | null>(null);
-  const [billingCycle] = useState<BillingCycle>(DEFAULT_BILLING);
 
   const { user } = useAppSelector((state: RootState) => state.auth);
   const subscriptionState = useAppSelector((state: RootState) => state.subscription);
@@ -232,7 +202,7 @@ function SubscribeContent() {
   }, [subscriptionState.data?.plan]);
 
   const isSubscriber =
-    user?.role === 'subscriber' || subscriptionState.data?.status === 'active';
+    subscriptionState.data?.status === 'ACTIVE';
 
   const activePlanTitle = subscriptionState.data?.plan
     ? PLANS.find((plan) => plan.id === subscriptionState.data?.plan)?.title ||
@@ -246,33 +216,16 @@ function SubscribeContent() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (!subscriptionState.checkoutUrl) {
-      return;
-    }
-
-    if (typeof window === 'undefined') {
-      return;
-    }
-
+    if (!subscriptionState.checkoutUrl) return;
+    if (typeof window === 'undefined') return;
     window.location.href = subscriptionState.checkoutUrl;
   }, [subscriptionState.checkoutUrl]);
 
   useEffect(() => {
-    if (!searchParams || paramsHandled.current) {
-      return;
-    }
+    if (!searchParams || paramsHandled.current) return;
 
-    const sessionId = searchParams.get('session_id');
     const reference = searchParams.get('reference');
     const cancelled = searchParams.get('cancelled');
-
-    if (sessionId) {
-      paramsHandled.current = true;
-      dispatch(finalizeStripeCheckout({ sessionId })).finally(() => {
-        router.replace('/subscribe');
-      });
-      return;
-    }
 
     if (reference) {
       paramsHandled.current = true;
@@ -300,27 +253,14 @@ function SubscribeContent() {
     }
   }, [subscriptionState.successMessage]);
 
-  const handleCheckout = (provider: ProviderOption, plan: PlanConfig) => {
+  const handleCheckout = (plan: PlanConfig) => {
     setSelectedPlanId(plan.id);
-    setSelectedProvider(provider);
     setLocalNotice(null);
-
-    if (provider === 'stripe') {
-      dispatch(
-        startStripeCheckout({
-          planId: plan.id,
-          priceId: plan.stripePriceId,
-          billingCycle,
-        })
-      );
-      return;
-    }
 
     dispatch(
       startPaystackCheckout({
         planId: plan.id,
-        amount: plan.paystackAmount,
-        billingCycle,
+        amount: plan.amount,
       })
     );
   };
@@ -329,39 +269,25 @@ function SubscribeContent() {
     dispatch(cancelSubscription());
   };
 
-  const isStripeProcessing =
-    subscriptionState.loading && subscriptionState.providerInFlight === 'stripe';
-  const isPaystackProcessing =
-    subscriptionState.loading && subscriptionState.providerInFlight === 'paystack';
+  const isProcessing = subscriptionState.loading;
 
   const renderPlanActions = (plan: PlanConfig) => {
-    const stripeLabel =
-      isStripeProcessing && selectedProvider === 'stripe' && selectedPlanId === plan.id
+    const label =
+      isProcessing && selectedPlanId === plan.id
         ? 'Redirecting...'
-        : 'Checkout with Stripe';
-    const paystackLabel =
-      isPaystackProcessing && selectedProvider === 'paystack' && selectedPlanId === plan.id
-        ? 'Redirecting...'
-        : 'Checkout with Paystack';
+        : `Subscribe — ${plan.priceLabel}`;
 
     return (
       <div className="mt-6 flex flex-col gap-3">
         <button
-          onClick={() => handleCheckout('stripe', plan)}
-          disabled={isStripeProcessing || subscriptionState.verifying || isSubscriber}
+          onClick={() => handleCheckout(plan)}
+          disabled={isProcessing || subscriptionState.verifying || isSubscriber}
           className="w-full rounded-full bg-linear-to-r from-purple-500 to-pink-500 py-3 font-semibold text-white shadow transition hover:from-purple-600 hover:to-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {stripeLabel}
-        </button>
-        <button
-          onClick={() => handleCheckout('paystack', plan)}
-          disabled={isPaystackProcessing || subscriptionState.verifying || isSubscriber}
-          className="w-full rounded-full bg-white/80 py-3 font-semibold text-purple-600 shadow transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {paystackLabel}
+          {label}
         </button>
         <p className="text-center text-xs text-gray-500">
-          Stripe bills in USD ({plan.priceLabel}/mo). Paystack bills in NGN ({plan.paystackLabel}/mo).
+          Secure payment via Paystack · {plan.priceLabel} / academic session
         </p>
       </div>
     );
@@ -373,7 +299,7 @@ function SubscribeContent() {
         <div className="container mx-auto px-4 py-12">
           <h1 className="mb-4 text-center text-5xl font-bold text-rainbow">Episode Packages & Pricing 🌟</h1>
           <p className="mx-auto mb-10 max-w-3xl text-center text-lg text-gray-700">
-            Choose the episode package that fits your family best. Each package includes animated episodes tailored across three key age groups. Pay easily via Stripe or Paystack.
+            Choose the episode package that fits your family best. Each package includes animated episodes tailored across three key age groups. Pay easily via Paystack.
           </p>
 
           {localNotice && (
@@ -404,8 +330,7 @@ function SubscribeContent() {
                   : 'N/A'}
               </p>
               <p className="mb-4 text-center text-sm text-gray-600">
-                Billing via {subscriptionState.data.paymentProvider === 'paystack' ? 'Paystack' : 'Stripe'} · Plan:{' '}
-                {activePlanTitle}
+                Billing via Paystack · Plan: {activePlanTitle}
               </p>
               <div className="flex justify-center">
                 <button
@@ -440,7 +365,7 @@ function SubscribeContent() {
                       <p className="mb-4 text-xs text-gray-600">{plan.description}</p>
                       <div className="mb-4 text-4xl font-extrabold text-purple-600">
                         {plan.priceLabel}
-                        <span className="ml-1 text-base font-normal text-gray-600">/mo</span>
+                        <span className="ml-1 text-base font-normal text-gray-600">/session</span>
                       </div>
 
                       {/* Episode Age Distribution Box */}

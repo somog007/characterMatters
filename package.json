@@ -1,5 +1,6 @@
 {
   "name": "character-matters-workspace",
+  "type": "module",
   "version": "1.0.0",
   "private": true,
   "description": "Character Matters Video & eBook Platform Monorepo Workspace",
@@ -12,11 +13,16 @@
     "build": "npm --prefix backend run build && npm --prefix web run build && npm --prefix landing run build",
     "install:all": "npm --prefix backend install && npm --prefix web install && npm --prefix landing install",
     "prisma:generate": "npm --prefix backend run prisma:generate",
-    "prisma:deploy": "npm --prefix backend run prisma:deploy"
+    "prisma:deploy": "npm --prefix backend run prisma:deploy",
+    "contract:emit": "prisma contract emit"
   },
   "workspaces": [
     "backend",
     "web",
     "landing"
-  ]
+  ],
+  "dependencies": {
+    "@prisma/orm-postgres": "^8.0.0-rc.11",
+    "dotenv": "^18.0.2"
+  }
 }

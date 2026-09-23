@@ -5,8 +5,17 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
+        source: '/welcome',
+        destination: '/welcome/index.html',
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      {
         source: '/landing',
-        destination: '/landing/index.html',
+        destination: '/welcome',
+        permanent: true,
       },
     ];
   },

@@ -6,12 +6,12 @@
   "description": "Character Matters Video & eBook Platform Monorepo Workspace",
   "scripts": {
     "dev": "npm --prefix web run dev",
-    "dev:landing": "npm --prefix landing run dev",
-    "dev:all": "npx concurrently \"npm --prefix backend run dev\" \"npm --prefix web run dev\" \"npm --prefix landing run dev\"",
+    "dev:welcome": "npm --prefix welcome run dev",
+    "dev:all": "npx concurrently \"npm --prefix backend run dev\" \"npm --prefix web run dev\" \"npm --prefix welcome run dev\"",
     "dev:web": "npm --prefix web run dev",
     "dev:backend": "npm --prefix backend run dev",
-    "build": "npm --prefix backend run build && npm --prefix web run build && npm --prefix landing run build",
-    "install:all": "npm --prefix backend install && npm --prefix web install && npm --prefix landing install",
+    "build": "npm --prefix backend run build && npm --prefix web run build && npm --prefix welcome run build",
+    "install:all": "npm --prefix backend install && npm --prefix web install && npm --prefix welcome install",
     "prisma:generate": "npm --prefix backend run prisma:generate",
     "prisma:deploy": "npm --prefix backend run prisma:deploy",
     "contract:emit": "prisma contract emit"
@@ -19,7 +19,7 @@
   "workspaces": [
     "backend",
     "web",
-    "landing"
+    "welcome"
   ],
   "dependencies": {
     "@prisma/orm-postgres": "^8.0.0-rc.11",

@@ -8,12 +8,22 @@
 
 [[redirects]]
   from = "/landing"
-  to = "/landing/index.html"
-  status = 200
+  to = "/welcome"
+  status = 301
 
 [[redirects]]
   from = "/landing/*"
-  to = "/landing/:splat"
+  to = "/welcome/:splat"
+  status = 301
+
+[[redirects]]
+  from = "/welcome"
+  to = "/welcome/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/welcome/*"
+  to = "/welcome/:splat"
   status = 200
 
 [build.environment]

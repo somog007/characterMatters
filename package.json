@@ -13,14 +13,14 @@
     "build": "npm --prefix backend run build && npm --prefix web run build && npm --prefix welcome run build",
     "install:all": "npm --prefix backend install && npm --prefix web install && npm --prefix welcome install",
     "prisma:generate": "npm --prefix backend run prisma:generate",
-    "prisma:deploy": "npm --prefix backend run prisma:deploy",
-    "contract:emit": "prisma contract emit"
+    "prisma:deploy": "npm --prefix backend run prisma:deploy"
   },
   "workspaces": [
     "backend",
     "web",
     "welcome"
   ],
+  "dependencies": {
     "@prisma/client": "^5.22.0"
   },
   "devDependencies": {

@@ -1,5 +1,11 @@
-// PostgreSQL Database Client using Prisma ORM
+import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
+
+dotenv.config();
+
+if (process.env.DATABASE_URL && !process.env.DIRECT_URL) {
+  process.env.DIRECT_URL = process.env.DATABASE_URL;
+}
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;

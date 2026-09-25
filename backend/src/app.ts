@@ -21,6 +21,10 @@ import playbackRoutes from './routes/playbackRoutes';
 
 dotenv.config();
 
+if (process.env.DATABASE_URL && !process.env.DIRECT_URL) {
+  process.env.DIRECT_URL = process.env.DATABASE_URL;
+}
+
 // Initialize Sentry
 Sentry.init({
   dsn: process.env.SENTRY_DSN,

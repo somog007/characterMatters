@@ -5,7 +5,7 @@ const https = require('https');
 const { URL } = require('url');
 
 const hookUrl = process.env.NETLIFY_BUILD_HOOK_URL || process.argv[2];
-const triggerMessage = process.env.NETLIFY_BUILD_MESSAGE || process.argv[3] || 'Triggered via trigger-netlify-build.js';
+const triggerMessage = process.env.NETLIFY_BUILD_MESSAGE || process.argv[3] || 'Triggered via trigger-netlify-build.cjs';
 
 if (!hookUrl) {
   console.error('Missing build hook URL. Pass it as NETLIFY_BUILD_HOOK_URL env var or first argument.');

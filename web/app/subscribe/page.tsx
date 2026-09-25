@@ -27,6 +27,7 @@ interface PlanConfig {
   badge?: string;
   recommended?: boolean;
   gradient: string;
+  contentUrl?: string;
   ageBreakdown: {
     toddler: string;   // Ages 2 & 3
     preK: string;      // Ages 4 & 5

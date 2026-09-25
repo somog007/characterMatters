@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node ../scripts/build-and-copy-landing.js && next build",
+    "build": "node ../scripts/build-and-copy-landing.cjs && next build",
     "start": "next start",
     "lint": "eslint",
-    "trigger:netlify": "node ../scripts/trigger-netlify-build.js"
+    "trigger:netlify": "node ../scripts/trigger-netlify-build.cjs"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.10.1",

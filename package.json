@@ -21,10 +21,10 @@
     "welcome"
   ],
   "dependencies": {
-    "@prisma/client": "^5.22.0"
+    "@prisma/client": "8.1.0-dev.7"
   },
   "devDependencies": {
     "@types/node": "^20.5.0",
-    "prisma": "^5.22.0"
+    "prisma": "8.0.0-rc.17"
   }
 }

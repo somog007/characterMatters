@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/prisma';
 import { initializePaystackTransaction, verifyPaystackTransaction } from '../utils/paystack';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from '@prisma/client';
 import { logger } from '../middleware/logger';
 
 export const startPaystackCheckout = async (req: AuthRequest, res: Response) => {
@@ -48,7 +48,7 @@ export const startPaystackCheckout = async (req: AuthRequest, res: Response) => 
         plan: planId,
         status: 'PENDING',
         billingCycle: billingCycle as any,
-        priceAmountNgn: new Decimal(amount),
+        priceAmountNgn: new Prisma.Decimal(amount),
         providerReference: transaction.reference,
         startDate: new Date(),
       },
@@ -57,7 +57,7 @@ export const startPaystackCheckout = async (req: AuthRequest, res: Response) => 
         plan: planId,
         status: 'PENDING',
         billingCycle: billingCycle as any,
-        priceAmountNgn: new Decimal(amount),
+        priceAmountNgn: new Prisma.Decimal(amount),
         paymentProvider: 'PAYSTACK',
         providerReference: transaction.reference,
         startDate: new Date(),
@@ -104,7 +104,7 @@ export const verifyPaystackCheckout = async (req: AuthRequest, res: Response) =>
         plan: (verification.metadata?.planId as string) || 'default',
         status: 'ACTIVE',
         billingCycle: billingCycle as any,
-        priceAmountNgn: new Decimal((verification.amount || 0) / 100),
+        priceAmountNgn: new Prisma.Decimal((verification.amount || 0) / 100),
         startDate,
         currentPeriodStart: startDate,
         currentPeriodEnd: endDate,
@@ -118,7 +118,7 @@ export const verifyPaystackCheckout = async (req: AuthRequest, res: Response) =>
         plan: (verification.metadata?.planId as string) || 'default',
         status: 'ACTIVE',
         billingCycle: billingCycle as any,
-        priceAmountNgn: new Decimal((verification.amount || 0) / 100),
+        priceAmountNgn: new Prisma.Decimal((verification.amount || 0) / 100),
         startDate,
         currentPeriodStart: startDate,
         currentPeriodEnd: endDate,
@@ -142,7 +142,7 @@ export const verifyPaystackCheckout = async (req: AuthRequest, res: Response) =>
       data: {
         userId: user.id,
         reference: verification.reference,
-        amountNgn: new Decimal((verification.amount || 0) / 100),
+        amountNgn: new Prisma.Decimal((verification.amount || 0) / 100),
         status: 'success',
         planId: (verification.metadata?.planId as string) || 'default',
         channel: verification.channel || null,
@@ -269,7 +269,7 @@ export const handlePaystackWebhook = async (req: Request, res: Response) => {
           data: {
             userId,
             reference,
-            amountNgn: new Decimal((data.amount || 0) / 100),
+            amountNgn: new Prisma.Decimal((data.amount || 0) / 100),
             status: 'success',
             planId,
             channel: data.channel || null,
@@ -285,7 +285,7 @@ export const handlePaystackWebhook = async (req: Request, res: Response) => {
           plan: planId,
           status: 'ACTIVE',
           billingCycle: billingCycle as any,
-          priceAmountNgn: new Decimal((data.amount || 0) / 100),
+          priceAmountNgn: new Prisma.Decimal((data.amount || 0) / 100),
           startDate,
           currentPeriodStart: startDate,
           currentPeriodEnd: endDate,
@@ -299,7 +299,7 @@ export const handlePaystackWebhook = async (req: Request, res: Response) => {
           plan: planId,
           status: 'ACTIVE',
           billingCycle: billingCycle as any,
-          priceAmountNgn: new Decimal((data.amount || 0) / 100),
+          priceAmountNgn: new Prisma.Decimal((data.amount || 0) / 100),
           startDate,
           currentPeriodStart: startDate,
           currentPeriodEnd: endDate,

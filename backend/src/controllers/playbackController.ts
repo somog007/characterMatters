@@ -23,7 +23,7 @@ export const createPlaybackSession = async (req: AuthRequest, res: Response) => 
       },
     });
 
-    const isCurrentDeviceActive = activeDeviceSessions.some((d) => d.deviceId === deviceId);
+    const isCurrentDeviceActive = activeDeviceSessions.some((d: { deviceId: string }) => d.deviceId === deviceId);
 
     if (!isCurrentDeviceActive && activeDeviceSessions.length >= maxDevices) {
       return res.status(429).json({

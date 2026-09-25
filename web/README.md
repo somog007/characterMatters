@@ -26,5 +26,5 @@ This web application is configured for deployment on **Netlify** using [`netlify
 
 - **Frontend Hosting**: Netlify
 - **Backend Service**: Node.js / Express on Render or Cloud Run
-- **Database**: PostgreSQL / Prisma Cloud Postgres
+- **Database**: PostgreSQL
 

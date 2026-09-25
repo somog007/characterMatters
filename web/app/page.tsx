@@ -390,9 +390,19 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <Link href="/subscribe?plan=package_6" className="mt-4 block text-center bg-gray-800 hover:bg-black text-white font-bold py-3 rounded-full shadow-md transition">
-                Select Bronze Package
-              </Link>
+              <div className="mt-4 space-y-2">
+                <Link href="/subscribe?plan=package_6" className="block text-center bg-gray-800 hover:bg-black text-white font-bold py-3 rounded-full shadow-md transition">
+                  Select Bronze Package
+                </Link>
+                <a
+                  href="https://collection.cloudinary.com/crau2l9a/fafda5942927feb6d904a3105bda1d79"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-semibold text-xs py-2 rounded-full border border-blue-200 transition"
+                >
+                  📁 Preview Cloudinary Collection
+                </a>
+              </div>
             </AnimatedCard>
           </div>
         </section>

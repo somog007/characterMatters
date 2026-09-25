@@ -74,3 +74,53 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+export const assignUserSubscription = async (req: AuthRequest, res: Response) => {
+  try {
+    const { email, planId = 'package_6', billingCycle = 'ACADEMIC_SESSION' } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'email is required' });
+    }
+
+    let user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found with specified email' });
+    }
+
+    const now = new Date();
+    const nextYear = new Date(now);
+    nextYear.setFullYear(nextYear.getFullYear() + 1);
+
+    const subscription = await prisma.subscription.upsert({
+      where: { userId: user.id },
+      update: {
+        plan: planId,
+        status: 'ACTIVE',
+        billingCycle: billingCycle as any,
+        priceAmountNgn: 150000,
+        startDate: now,
+        currentPeriodStart: now,
+        currentPeriodEnd: nextYear,
+        endDate: nextYear,
+        paymentProvider: 'PAYSTACK',
+      },
+      create: {
+        userId: user.id,
+        plan: planId,
+        status: 'ACTIVE',
+        billingCycle: billingCycle as any,
+        priceAmountNgn: 150000,
+        startDate: now,
+        currentPeriodStart: now,
+        currentPeriodEnd: nextYear,
+        endDate: nextYear,
+        paymentProvider: 'PAYSTACK',
+      },
+    });
+
+    res.json({ message: `Subscription assigned successfully to ${email}`, subscription });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+

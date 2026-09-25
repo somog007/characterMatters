@@ -2,6 +2,7 @@ import express from 'express';
 import {
 	cancelSubscription,
 	getSubscription,
+	handlePaystackWebhook,
 	startPaystackCheckout,
 	verifyPaystackCheckout,
 } from '../controllers/subscriptionController';
@@ -14,6 +15,7 @@ const router = express.Router();
 router.get('/', auth, getSubscription);
 router.post('/checkout/paystack', auth, validateBody(PaystackCheckoutSchema), startPaystackCheckout);
 router.get('/checkout/paystack/verify', auth, verifyPaystackCheckout);
+router.post('/webhook', handlePaystackWebhook);
 router.delete('/', auth, cancelSubscription);
 
 export default router;

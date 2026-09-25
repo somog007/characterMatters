@@ -153,6 +153,7 @@ const PLANS: PlanConfig[] = [
     priceLabel: '₦150,000',
     amount: 150000,
     gradient: 'from-cyan-100 via-sky-100 to-blue-100',
+    contentUrl: 'https://collection.cloudinary.com/crau2l9a/fafda5942927feb6d904a3105bda1d79',
     ageBreakdown: {
       toddler: '1 episode',
       preK: '1 episode',
@@ -162,6 +163,7 @@ const PLANS: PlanConfig[] = [
       '3 Lessons Aligned with Nigerian School Curriculum',
       '1 Episode for Each Age Group',
       'Sample Activity Worksheets',
+      'Cloudinary Video & Resource Collection',
       'Standard Support',
     ],
   },
@@ -332,7 +334,15 @@ function SubscribeContent() {
               <p className="mb-4 text-center text-sm text-gray-600">
                 Billing via Paystack · Plan: {activePlanTitle}
               </p>
-              <div className="flex justify-center">
+              <div className="flex flex-wrap items-center justify-center gap-4">
+                <a
+                  href="https://collection.cloudinary.com/crau2l9a/fafda5942927feb6d904a3105bda1d79"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-full bg-blue-600 px-6 py-2 font-semibold text-white transition hover:bg-blue-700 shadow-md flex items-center gap-2"
+                >
+                  <span>📁</span> Access Bronze Cloudinary Collection
+                </a>
                 <button
                   onClick={handleCancelSubscription}
                   disabled={subscriptionState.loading}

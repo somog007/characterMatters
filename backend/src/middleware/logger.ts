@@ -26,7 +26,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
   logger.info({
     message: 'HTTP Request',
     method: req.method,
-    url: req.url,
+    path: req.path,
     ip: req.ip,
     userAgent: req.get('User-Agent'),
   });

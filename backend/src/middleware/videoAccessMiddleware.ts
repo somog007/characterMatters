@@ -12,6 +12,15 @@ const TIER_HIERARCHY: Record<string, number> = {
   PLATINUM: 6,
 };
 
+const PLAN_TIER: Record<string, string> = {
+  PACKAGE_1: 'PLATINUM',
+  PACKAGE_2: 'DIAMOND',
+  PACKAGE_3: 'SAPPHIRE',
+  PACKAGE_4: 'GOLD',
+  PACKAGE_5: 'SILVER',
+  PACKAGE_6: 'BRONZE',
+};
+
 export const authorizeVideoCategoryAccess = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const videoId = req.params.videoId || req.body.videoId;
@@ -21,13 +30,12 @@ export const authorizeVideoCategoryAccess = async (req: AuthRequest, res: Respon
       return res.status(401).json({ message: 'Authentication required' });
     }
 
-    // Admins bypass authorization checks
-    if (user.role === 'ADMIN') {
-      return next();
-    }
-
     if (user.status && user.status !== 'active') {
       return res.status(403).json({ message: 'Account is inactive or suspended' });
+    }
+
+    if (user.role === 'ADMIN') {
+      return next();
     }
 
     const video = await prisma.lesson.findUnique({
@@ -52,7 +60,8 @@ export const authorizeVideoCategoryAccess = async (req: AuthRequest, res: Respon
     if (subscription && subscription.status === 'ACTIVE') {
       const isCurrent = !subscription.currentPeriodEnd || new Date(subscription.currentPeriodEnd) > new Date();
       if (isCurrent) {
-        const userTierLevel = TIER_HIERARCHY[subscription.plan.toUpperCase()] || 0;
+        const plan = subscription.plan.toUpperCase();
+        const userTierLevel = TIER_HIERARCHY[PLAN_TIER[plan] || plan] || 0;
         const videoTierLevel = TIER_HIERARCHY[video.accessTier] || 0;
 
         if (userTierLevel >= videoTierLevel) {

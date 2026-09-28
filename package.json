@@ -21,10 +21,14 @@
     "welcome"
   ],
   "dependencies": {
-    "@prisma/client": "8.1.0-dev.7"
+    "@prisma/client": "^5.22.0",
+    "qs": "6.16.0"
   },
   "devDependencies": {
     "@types/node": "^20.5.0",
-    "prisma": "8.0.0-rc.17"
+    "prisma": "^5.22.0"
+  },
+  "overrides": {
+    "qs": "6.16.0"
   }
 }

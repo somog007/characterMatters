@@ -1,10 +1,23 @@
 [build]
   # Build from the web folder
   base = "web"
-  command = "npm run build"
+  command = "cd .. && npm run prisma:generate && cd web && npm run build"
+  functions = "functions"
+
+[functions]
+  node_bundler = "esbuild"
+  included_files = [
+    "../node_modules/.prisma/client/**",
+    "../backend/node_modules/.prisma/client/**"
+  ]
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/api/:splat"
+  status = 200
 
 [[redirects]]
   from = "/landing"
@@ -27,16 +40,6 @@
   status = 200
 
 [build.environment]
-  # Node version — must match local development environment
   NODE_VERSION = "22"
-  # Tell npm to install devDependencies even when NODE_ENV=production.
-  # Netlify sets NODE_ENV=production by default, which causes npm to skip
-  # devDependencies. This app needs devDeps at build time:
-  #   - @tailwindcss/postcss  (PostCSS / Tailwind v4 compilation)
-  #   - babel-plugin-react-compiler  (Next.js React Compiler support)
-  #   - typescript, eslint-config-next  (type-checking and linting during build)
   NPM_FLAGS = "--include=dev"
-  # Disable Next.js telemetry to keep build output clean and avoid timeout noise
   NEXT_TELEMETRY_DISABLED = "1"
-  # Set these in the Netlify UI — do NOT commit real values here
-  # NEXT_PUBLIC_API_URL = "https://your-backend.onrender.com/api"

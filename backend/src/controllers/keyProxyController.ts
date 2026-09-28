@@ -5,7 +5,7 @@ import prisma from '../config/prisma';
 
 export const getHLSKey = async (req: AuthRequest, res: Response) => {
   try {
-    const sessionToken = (req.query.sessionToken as string) || (req.query.sid as string);
+    const sessionToken = req.header('X-Playback-Session');
     if (!sessionToken) {
       return res.status(400).json({ message: 'Session token required' });
     }
@@ -15,7 +15,12 @@ export const getHLSKey = async (req: AuthRequest, res: Response) => {
       where: { sessionToken },
     });
 
-    if (!session || session.status !== 'active' || session.expiresAt < new Date()) {
+    if (
+      !session ||
+      session.userId !== req.user?.id ||
+      session.status !== 'active' ||
+      session.expiresAt < new Date()
+    ) {
       return res.status(403).json({ message: 'Invalid or revoked playback session key request' });
     }
 
@@ -30,7 +35,10 @@ export const getHLSKey = async (req: AuthRequest, res: Response) => {
     }
 
     // Retrieve master AES-128 key securely from environment KMS or secret
-    const masterKeyHex = process.env.HLS_AES_128_MASTER_KEY || '0123456789abcdef0123456789abcdef';
+    const masterKeyHex = process.env.HLS_AES_128_MASTER_KEY;
+    if (!masterKeyHex || !/^[a-f\d]{32}$/i.test(masterKeyHex)) {
+      return res.status(503).json({ message: 'Video key service is not configured' });
+    }
     const rawEncryptionKey = Buffer.from(masterKeyHex, 'hex');
 
     // Set binary response headers

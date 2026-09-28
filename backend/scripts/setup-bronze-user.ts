@@ -8,29 +8,36 @@ const EMAIL = 'weaversprivateschool2023@gmail.com';
 const CLOUDINARY_BRONZE_URL = 'https://collection.cloudinary.com/crau2l9a/fafda5942927feb6d904a3105bda1d79';
 
 async function main() {
-  console.log(`Setting up Bronze Package subscription for ${EMAIL}...`);
+  const initialPassword = process.env.INITIAL_WEAVERS_PASSWORD;
+  if (!initialPassword) {
+    throw new Error('Set INITIAL_WEAVERS_PASSWORD before running this script');
+  }
 
-  // 1. Check or create User
-  let user = await prisma.user.findUnique({
+  console.log(`Setting up Bronze Package account for ${EMAIL}...`);
+
+  const hashedPassword = await bcrypt.hash(initialPassword, 12);
+
+  // Provision this account with a temporary password and require rotation at login.
+  const user = await prisma.user.upsert({
     where: { email: EMAIL },
+    update: {
+      fullName: 'Weavers Private School',
+      schoolName: 'Weavers Private School',
+      passwordHash: hashedPassword,
+      role: 'USER',
+      status: 'must_change_password',
+    },
+    create: {
+      email: EMAIL,
+      fullName: 'Weavers Private School',
+      schoolName: 'Weavers Private School',
+      passwordHash: hashedPassword,
+      role: 'USER',
+      status: 'must_change_password',
+    },
   });
 
-  if (!user) {
-    const hashedPassword = await bcrypt.hash('Weavers2026!', 10);
-    user = await prisma.user.create({
-      data: {
-        email: EMAIL,
-        fullName: 'Weavers Private School',
-        schoolName: 'Weavers Private School',
-        passwordHash: hashedPassword,
-        role: 'USER',
-        status: 'active',
-      },
-    });
-    console.log(`Created new user for ${EMAIL} with ID: ${user.id}`);
-  } else {
-    console.log(`Found existing user ${EMAIL} with ID: ${user.id}`);
-  }
+  console.log(`Provisioned user ${EMAIL}; password change is required at first login.`);
 
   // 2. Set up / update Subscription to active Bronze Package (package_6)
   const now = new Date();

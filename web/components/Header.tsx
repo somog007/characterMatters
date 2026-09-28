@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { logout } from '@/store/authSlice';
+import api from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { RootState } from '@/store';
 
@@ -14,8 +15,12 @@ export default function Header() {
   const { isAuthenticated, user } = useAppSelector((state: RootState) => state.auth);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } finally {
+      dispatch(logout());
+    }
     setMobileMenuOpen(false);
   };
 

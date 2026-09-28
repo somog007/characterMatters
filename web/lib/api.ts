@@ -1,18 +1,33 @@
 import axios from 'axios';
 
+const baseURL = process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api');
+let csrfToken: string | null = null;
+
+const fetchCsrfToken = async () => {
+  if (!csrfToken) {
+    const response = await axios.get(`${baseURL}/auth/csrf`, { withCredentials: true });
+    csrfToken = response.data.csrfToken;
+  }
+  return csrfToken;
+};
+
+export const getCsrfToken = () => csrfToken;
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  baseURL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor to add auth token
 api.interceptors.request.use(
-  (config) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  async (config) => {
+    const method = (config.method || 'get').toUpperCase();
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+      const token = await fetchCsrfToken();
+      config.headers['X-CSRF-Token'] = token;
     }
     return config;
   },
@@ -23,15 +38,11 @@ api.interceptors.request.use(
 
 // Response interceptor to handle errors
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.data?.csrfToken) csrfToken = response.data.csrfToken;
+    return response;
+  },
   (error) => {
-    if (error.response?.status === 401) {
-      // Clear token and redirect to login if unauthorized
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-      }
-    }
     return Promise.reject(error);
   }
 );

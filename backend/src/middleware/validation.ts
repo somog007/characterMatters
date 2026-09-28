@@ -11,6 +11,11 @@ export const AuthLoginSchema = z.object({
   password: z.string().min(6).max(128),
 });
 
+export const AuthChangePasswordSchema = z.object({
+  currentPassword: z.string().min(1).max(128),
+  newPassword: z.string().min(12).max(128),
+});
+
 export const AuthUpdateProfileSchema = z.object({
   name: z.string().trim().min(2).max(120).optional(),
   avatar: z.string().url().optional(),
@@ -26,6 +31,10 @@ export const UserUpdateSchema = z.object({
   name: z.string().min(2).optional(),
   avatar: z.string().url().optional(),
   role: z.enum(['USER', 'PARENT', 'TEACHER', 'SCHOOL_ADMIN', 'ADMIN']).optional(),
+});
+
+export const AdminRoleUpdateSchema = z.object({
+  role: z.enum(['USER', 'PARENT', 'TEACHER', 'SCHOOL_ADMIN', 'ADMIN']),
 });
 
 export const VideoCreateSchema = z.object({
@@ -57,9 +66,6 @@ export const GalleryCreateSchema = z.object({
 
 export const PaystackCheckoutSchema = z.object({
   planId: z.string().min(1),
-  amount: z.coerce.number().positive(),
-  billingCycle: z.enum(['MONTHLY', 'YEARLY', 'ACADEMIC_SESSION']).optional(),
-  callbackUrl: z.string().url().optional(),
 });
 
 export const PaginationSchema = z.object({

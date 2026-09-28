@@ -6,20 +6,27 @@ import { initializePaystackTransaction, verifyPaystackTransaction } from '../uti
 import { Prisma } from '@prisma/client';
 import { logger } from '../middleware/logger';
 
+const PACKAGE_PRICES_NGN: Record<string, number> = {
+  package_1: 1_200_000,
+  package_2: 900_000,
+  package_3: 750_000,
+  package_4: 450_000,
+  package_5: 300_000,
+  package_6: 150_000,
+};
+
+const BILLING_CYCLE = 'ACADEMIC_SESSION' as const;
+
 export const startPaystackCheckout = async (req: AuthRequest, res: Response) => {
   try {
-    const { planId, amount, billingCycle = 'ACADEMIC_SESSION', callbackUrl } = req.body as {
-      planId: string;
-      amount: number;
-      billingCycle?: 'MONTHLY' | 'YEARLY' | 'ACADEMIC_SESSION';
-      callbackUrl?: string;
-    };
+    const { planId } = req.body as { planId: string };
 
     const user = req.user;
     if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
-    if (!planId || !amount) {
-      return res.status(400).json({ message: 'planId and amount are required' });
+    const amount = PACKAGE_PRICES_NGN[planId];
+    if (!amount) {
+      return res.status(400).json({ message: 'Unknown subscription plan' });
     }
 
     // Check for existing active subscription
@@ -30,16 +37,21 @@ export const startPaystackCheckout = async (req: AuthRequest, res: Response) => 
       return res.status(400).json({ message: 'User already has an active subscription' });
     }
 
-    const reference = `ps_${user.id}_${Date.now()}`;
-    const resolvedCallback =
-      callbackUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/subscribe?reference=${reference}`;
+    const reference = `ps_${crypto.randomUUID()}`;
+    const callbackBase = process.env.PAYSTACK_CALLBACK_URL ||
+      `${process.env.FRONTEND_URL || 'http://localhost:3000'}/subscribe`;
+    const callback = new URL(callbackBase);
+    if (process.env.NODE_ENV === 'production' && callback.protocol !== 'https:') {
+      return res.status(500).json({ message: 'Payment callback must use HTTPS in production' });
+    }
+    const resolvedCallback = callback.toString();
 
     const transaction = await initializePaystackTransaction({
       amount,
       email: user.email,
       reference,
       callbackUrl: resolvedCallback,
-      metadata: { planId, userId: user.id, billingCycle },
+      metadata: { planId, userId: user.id, billingCycle: BILLING_CYCLE },
     });
 
     await prisma.subscription.upsert({
@@ -47,7 +59,7 @@ export const startPaystackCheckout = async (req: AuthRequest, res: Response) => 
       update: {
         plan: planId,
         status: 'PENDING',
-        billingCycle: billingCycle as any,
+        billingCycle: BILLING_CYCLE,
         priceAmountNgn: new Prisma.Decimal(amount),
         providerReference: transaction.reference,
         startDate: new Date(),
@@ -56,7 +68,7 @@ export const startPaystackCheckout = async (req: AuthRequest, res: Response) => 
         userId: user.id,
         plan: planId,
         status: 'PENDING',
-        billingCycle: billingCycle as any,
+        billingCycle: BILLING_CYCLE,
         priceAmountNgn: new Prisma.Decimal(amount),
         paymentProvider: 'PAYSTACK',
         providerReference: transaction.reference,
@@ -78,14 +90,27 @@ export const verifyPaystackCheckout = async (req: AuthRequest, res: Response) =>
     if (!user) return res.status(401).json({ message: 'Unauthorized' });
     if (!reference) return res.status(400).json({ message: 'reference query param is required' });
 
+    const pending = await prisma.subscription.findUnique({ where: { userId: user.id } });
+    if (!pending || pending.status !== 'PENDING' || pending.providerReference !== reference) {
+      return res.status(404).json({ message: 'No matching pending payment found' });
+    }
+
     const verification = await verifyPaystackTransaction(reference);
 
-    if (verification.status !== 'success') {
+    const expectedAmountKobo = Math.round(Number(pending.priceAmountNgn) * 100);
+    if (
+      verification.status !== 'success' ||
+      verification.reference !== reference ||
+      verification.currency !== 'NGN' ||
+      verification.amount !== expectedAmountKobo ||
+      verification.metadata?.userId !== user.id ||
+      verification.metadata?.planId !== pending.plan
+    ) {
       return res.status(400).json({ message: 'Payment not successful yet' });
     }
 
     const startDate = verification.paid_at ? new Date(verification.paid_at) : new Date();
-    const billingCycle = (verification.metadata?.billingCycle as string) || 'ACADEMIC_SESSION';
+    const billingCycle = pending.billingCycle;
 
     // Calculate end date based on billing cycle
     const endDate = new Date(startDate);
@@ -98,56 +123,40 @@ export const verifyPaystackCheckout = async (req: AuthRequest, res: Response) =>
       endDate.setMonth(endDate.getMonth() + 9);
     }
 
-    const subscription = await prisma.subscription.upsert({
-      where: { userId: user.id },
-      update: {
-        plan: (verification.metadata?.planId as string) || 'default',
-        status: 'ACTIVE',
-        billingCycle: billingCycle as any,
-        priceAmountNgn: new Prisma.Decimal((verification.amount || 0) / 100),
-        startDate,
-        currentPeriodStart: startDate,
-        currentPeriodEnd: endDate,
-        endDate,
-        paymentProvider: 'PAYSTACK',
-        providerReference: verification.reference,
-        paystackCustomerCode: verification.customer?.customer_code || null,
-      },
-      create: {
-        userId: user.id,
-        plan: (verification.metadata?.planId as string) || 'default',
-        status: 'ACTIVE',
-        billingCycle: billingCycle as any,
-        priceAmountNgn: new Prisma.Decimal((verification.amount || 0) / 100),
-        startDate,
-        currentPeriodStart: startDate,
-        currentPeriodEnd: endDate,
-        endDate,
-        paymentProvider: 'PAYSTACK',
-        providerReference: verification.reference,
-        paystackCustomerCode: verification.customer?.customer_code || null,
-      },
-    });
-
-    // Update user's paystack customer code
-    if (verification.customer?.customer_code) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { paystackCustomerCode: verification.customer.customer_code },
+    const subscription = await prisma.$transaction(async (transaction) => {
+      await transaction.paystackTransaction.upsert({
+        where: { reference },
+        update: {},
+        create: {
+          userId: user.id,
+          reference,
+          amountNgn: new Prisma.Decimal(verification.amount / 100),
+          status: 'success',
+          planId: pending.plan,
+          channel: verification.channel || null,
+          paidAt: verification.paid_at ? new Date(verification.paid_at) : null,
+        },
       });
-    }
 
-    // Record the transaction
-    await prisma.paystackTransaction.create({
-      data: {
-        userId: user.id,
-        reference: verification.reference,
-        amountNgn: new Prisma.Decimal((verification.amount || 0) / 100),
-        status: 'success',
-        planId: (verification.metadata?.planId as string) || 'default',
-        channel: verification.channel || null,
-        paidAt: verification.paid_at ? new Date(verification.paid_at) : null,
-      },
+      const updated = await transaction.subscription.update({
+        where: { userId: user.id },
+        data: {
+          status: 'ACTIVE',
+          startDate,
+          currentPeriodStart: startDate,
+          currentPeriodEnd: endDate,
+          endDate,
+          paystackCustomerCode: verification.customer?.customer_code || null,
+        },
+      });
+
+      if (verification.customer?.customer_code) {
+        await transaction.user.update({
+          where: { id: user.id },
+          data: { paystackCustomerCode: verification.customer.customer_code },
+        });
+      }
+      return updated;
     });
 
     res.json({ message: 'Subscription activated', subscription });
@@ -212,113 +221,99 @@ export const handlePaystackWebhook = async (req: Request, res: Response) => {
     }
 
     const signature = req.headers['x-paystack-signature'];
-    if (!signature) {
+    const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
+    if (typeof signature !== 'string' || !rawBody || !/^[a-f\d]{128}$/i.test(signature)) {
       return res.status(401).send('Missing Paystack signature');
     }
 
     const hash = crypto
       .createHmac('sha512', secret)
-      .update(JSON.stringify(req.body))
-      .digest('hex');
+      .update(rawBody)
+      .digest();
+    const suppliedSignature = Buffer.from(signature, 'hex');
 
-    if (hash !== signature) {
+    if (hash.length !== suppliedSignature.length || !crypto.timingSafeEqual(hash, suppliedSignature)) {
       return res.status(401).send('Invalid Paystack signature');
     }
 
-    // Acknowledge receipt to Paystack immediately
-    res.status(200).send('Webhook received');
-
     const { event, data } = req.body;
+    if (event !== 'charge.success') {
+      return res.status(200).send('Webhook received');
+    }
 
-    if (event === 'charge.success') {
-      const reference = data.reference;
-      const metadata = data.metadata || {};
-      let userId = metadata.userId;
+    const reference = data?.reference;
+    const metadata = data?.metadata || {};
+    const userId = metadata.userId;
+    const planId = metadata.planId;
+    const pending = typeof userId === 'string'
+      ? await prisma.subscription.findUnique({ where: { userId } })
+      : null;
 
-      if (!userId && data.customer?.email) {
-        const user = await prisma.user.findUnique({
-          where: { email: data.customer.email },
-        });
-        if (user) userId = user.id;
+    if (!reference || !pending || pending.providerReference !== reference || pending.plan !== planId) {
+      logger.warn({ message: 'Paystack webhook does not match a pending subscription', reference });
+      return res.status(400).send('No matching pending payment');
+    }
+
+    if (data.status !== 'success' || data.currency !== 'NGN') {
+      return res.status(400).send('Payment status or currency is invalid');
+    }
+
+    const expectedAmountKobo = Math.round(Number(pending.priceAmountNgn) * 100);
+    if (data.amount !== expectedAmountKobo) {
+      logger.warn({ message: 'Paystack webhook amount mismatch', reference, userId });
+      return res.status(400).send('Payment amount does not match subscription');
+    }
+
+    const existingTransaction = await prisma.paystackTransaction.findUnique({ where: { reference } });
+    if (existingTransaction) {
+      if (existingTransaction.userId !== userId || existingTransaction.status !== 'success') {
+        return res.status(409).send('Payment reference has already been processed');
       }
+      return res.status(200).send('Webhook received');
+    }
 
-      if (!userId) {
-        logger.warn({ message: 'Paystack webhook charge.success received but user not found', reference, email: data.customer?.email });
-        return;
-      }
+    const startDate = data.paid_at ? new Date(data.paid_at) : new Date();
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + 9);
 
-      const planId = (metadata.planId as string) || 'default';
-      const billingCycle = (metadata.billingCycle as string) || 'ACADEMIC_SESSION';
-      const startDate = data.paid_at ? new Date(data.paid_at) : new Date();
-
-      const endDate = new Date(startDate);
-      if (billingCycle === 'YEARLY') {
-        endDate.setFullYear(endDate.getFullYear() + 1);
-      } else if (billingCycle === 'MONTHLY') {
-        endDate.setMonth(endDate.getMonth() + 1);
-      } else {
-        endDate.setMonth(endDate.getMonth() + 9);
-      }
-
-      const existingTx = await prisma.paystackTransaction.findUnique({
-        where: { reference },
+    await prisma.$transaction(async (transaction) => {
+      await transaction.paystackTransaction.create({
+        data: {
+          userId,
+          reference,
+          amountNgn: new Prisma.Decimal(data.amount / 100),
+          status: 'success',
+          planId,
+          channel: data.channel || null,
+          paidAt: startDate,
+          rawWebhookData: data,
+        },
       });
 
-      if (!existingTx) {
-        await prisma.paystackTransaction.create({
-          data: {
-            userId,
-            reference,
-            amountNgn: new Prisma.Decimal((data.amount || 0) / 100),
-            status: 'success',
-            planId,
-            channel: data.channel || null,
-            paidAt: startDate,
-            rawWebhookData: data,
-          },
-        });
-      }
-
-      await prisma.subscription.upsert({
+      await transaction.subscription.update({
         where: { userId },
-        update: {
-          plan: planId,
+        data: {
           status: 'ACTIVE',
-          billingCycle: billingCycle as any,
-          priceAmountNgn: new Prisma.Decimal((data.amount || 0) / 100),
           startDate,
           currentPeriodStart: startDate,
           currentPeriodEnd: endDate,
           endDate,
-          paymentProvider: 'PAYSTACK',
-          providerReference: reference,
-          paystackCustomerCode: data.customer?.customer_code || null,
-        },
-        create: {
-          userId,
-          plan: planId,
-          status: 'ACTIVE',
-          billingCycle: billingCycle as any,
-          priceAmountNgn: new Prisma.Decimal((data.amount || 0) / 100),
-          startDate,
-          currentPeriodStart: startDate,
-          currentPeriodEnd: endDate,
-          endDate,
-          paymentProvider: 'PAYSTACK',
-          providerReference: reference,
           paystackCustomerCode: data.customer?.customer_code || null,
         },
       });
 
       if (data.customer?.customer_code) {
-        await prisma.user.update({
+        await transaction.user.update({
           where: { id: userId },
           data: { paystackCustomerCode: data.customer.customer_code },
         });
       }
-    }
+    });
+
+    return res.status(200).send('Webhook received');
   } catch (error: any) {
     logger.error({ message: 'Paystack webhook processing error', error: error.message });
+    if (!res.headersSent) return res.status(500).send('Webhook processing failed');
   }
 };
 

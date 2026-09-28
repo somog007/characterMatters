@@ -4,8 +4,10 @@ import prisma from '../config/prisma';
 
 export const getAllGalleryItems = async (req: Request, res: Response) => {
   try {
-    const { page = '1', limit = '20', category, mediaType } = req.query;
-    const skip = (Number(page) - 1) * Number(limit);
+    const page = Math.max(1, Number.parseInt(String(req.query.page ?? '1'), 10) || 1);
+    const limit = Math.min(100, Math.max(1, Number.parseInt(String(req.query.limit ?? '20'), 10) || 20));
+    const skip = (page - 1) * limit;
+    const { category, mediaType } = req.query;
 
     const where: any = { isPublished: true };
     if (category) where.category = category;
@@ -15,7 +17,7 @@ export const getAllGalleryItems = async (req: Request, res: Response) => {
       prisma.galleryItem.findMany({
         where,
         skip,
-        take: Number(limit),
+        take: limit,
         orderBy: { createdAt: 'desc' },
       }),
       prisma.galleryItem.count({ where }),
@@ -23,8 +25,8 @@ export const getAllGalleryItems = async (req: Request, res: Response) => {
 
     res.json({
       items,
-      page: Number(page),
-      totalPages: Math.ceil(total / Number(limit)),
+      page,
+      totalPages: Math.ceil(total / limit),
       total,
     });
   } catch (error: any) {
@@ -34,7 +36,7 @@ export const getAllGalleryItems = async (req: Request, res: Response) => {
 
 export const getGalleryItemById = async (req: Request, res: Response) => {
   try {
-    const item = await prisma.galleryItem.findUnique({ where: { id: req.params.id } });
+    const item = await prisma.galleryItem.findFirst({ where: { id: req.params.id, isPublished: true } });
     if (!item) return res.status(404).json({ message: 'Gallery item not found' });
 
     res.json(item);

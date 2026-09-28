@@ -32,7 +32,24 @@ export const getAdminMetrics = async (req: AuthRequest, res: Response) => {
 export const getAdminUsers = async (req: AuthRequest, res: Response) => {
   try {
     const users = await prisma.user.findMany({
-      include: { subscription: true },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        role: true,
+        status: true,
+        schoolName: true,
+        avatar: true,
+        createdAt: true,
+        subscription: {
+          select: {
+            plan: true,
+            status: true,
+            billingCycle: true,
+            currentPeriodEnd: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -67,6 +84,7 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
     const updated = await prisma.user.update({
       where: { id: userId },
       data: { role },
+      select: { id: true, fullName: true, email: true, role: true, status: true },
     });
 
     res.json({ message: 'User role updated', user: updated });

@@ -1,8 +1,9 @@
 import { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { AuthRequest } from '../middleware/auth';
+import { AuthRequest, getJwtSecret } from '../middleware/auth';
 import prisma from '../config/prisma';
+import { clearSessionCookies, issueCsrfCookie, issueSessionCookies } from '../utils/sessionCookies';
 
 export const register = async (req: AuthRequest, res: Response) => {
   try {
@@ -24,11 +25,11 @@ export const register = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    const jwtSecret: jwt.Secret = process.env.JWT_SECRET || 'your-secret-key';
-    const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user.id }, getJwtSecret(), { expiresIn: '7d' });
+    const csrfToken = issueSessionCookies(res, token, 7 * 24 * 60 * 60 * 1000);
 
     res.status(201).json({
-      token,
+      csrfToken,
       user: {
         id: user.id,
         fullName: user.fullName,
@@ -55,15 +56,25 @@ export const login = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    if (user.status !== 'active') {
+    if (user.status !== 'active' && user.status !== 'must_change_password') {
       return res.status(403).json({ message: 'Account is suspended or blocked' });
     }
 
-    const jwtSecret: jwt.Secret = process.env.JWT_SECRET || 'your-secret-key';
-    const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' });
+    const mustChangePassword = user.status === 'must_change_password';
+    const token = jwt.sign(
+      { userId: user.id, ...(mustChangePassword ? { passwordChangeOnly: true } : {}) },
+      getJwtSecret(),
+      { expiresIn: mustChangePassword ? '15m' : '7d' }
+    );
+    const csrfToken = issueSessionCookies(
+      res,
+      token,
+      mustChangePassword ? 15 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000
+    );
 
     res.json({
-      token,
+      csrfToken,
+      mustChangePassword,
       user: {
         id: user.id,
         fullName: user.fullName,
@@ -74,6 +85,53 @@ export const login = async (req: AuthRequest, res: Response) => {
   } catch (error: any) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
+};
+
+export const changePassword = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+    const { currentPassword, newPassword } = req.body as {
+      currentPassword: string;
+      newPassword: string;
+    };
+    const matches = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!matches) return res.status(400).json({ message: 'Current password is incorrect' });
+    if (currentPassword === newPassword) {
+      return res.status(400).json({ message: 'Choose a password different from your current password' });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash, status: 'active' },
+    });
+    const token = jwt.sign({ userId: updatedUser.id }, getJwtSecret(), { expiresIn: '7d' });
+    const csrfToken = issueSessionCookies(res, token, 7 * 24 * 60 * 60 * 1000);
+
+    return res.json({
+      csrfToken,
+      mustChangePassword: false,
+      user: {
+        id: updatedUser.id,
+        fullName: updatedUser.fullName,
+        email: updatedUser.email,
+        role: updatedUser.role,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ message: 'Unable to change password' });
+  }
+};
+
+export const getCsrfToken = (_req: AuthRequest, res: Response) => {
+  return res.json({ csrfToken: issueCsrfCookie(res) });
+};
+
+export const logout = (_req: AuthRequest, res: Response) => {
+  clearSessionCookies(res);
+  return res.status(204).end();
 };
 
 export const getProfile = async (req: AuthRequest, res: Response) => {

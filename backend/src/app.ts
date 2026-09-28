@@ -3,10 +3,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import compression from 'compression';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
-import path from 'path';
 import * as Sentry from '@sentry/node';
 import { errorHandler } from './middleware/errorHandler';
+import { csrfProtection } from './middleware/auth';
 import { requestLogger, logger } from './middleware/logger';
 import prisma from './config/prisma';
 import authRoutes from './routes/auth';
@@ -16,7 +17,6 @@ import ebookRoutes from './routes/ebooks';
 import subscriptionRoutes from './routes/subscriptions';
 import galleryRoutes from './routes/gallery';
 import adminRoutes from './routes/admin';
-import mfaRoutes from './routes/mfa';
 import playbackRoutes from './routes/playbackRoutes';
 
 dotenv.config();
@@ -40,6 +40,26 @@ requiredEnv.forEach((key) => {
 });
 
 const app = express();
+if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32)) {
+  throw new Error('JWT_SECRET must be configured with at least 32 characters in production');
+}
+
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
+// Handle Netlify function path prefix rewrite if invoked via /.netlify/functions/api
+app.use((req, _res, next) => {
+  if (req.url.startsWith('/.netlify/functions/api')) {
+    const path = req.url.replace('/.netlify/functions/api', '') || '/';
+    if (path !== '/' && !/^\/api(?:\/|\?|$)/.test(path)) {
+      req.url = `/api${path}`;
+    } else {
+      req.url = path;
+    }
+  }
+  next();
+});
 
 // Security middleware
 app.use(helmet());
@@ -53,12 +73,22 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many login attempts. Try again later.' },
+});
 
-// Static media uploads (local disk fallback when Cloudinary is not configured)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Body parsing middleware
+app.use(express.json({
+  limit: '1mb',
+  verify: (req, _res, buffer) => {
+    (req as express.Request & { rawBody?: Buffer }).rawBody = Buffer.from(buffer);
+  },
+}));
+app.use(express.urlencoded({ extended: true, limit: '1mb', parameterLimit: 100 }));
 
 // Compression
 app.use(compression());
@@ -79,6 +109,9 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(cookieParser());
+app.use(csrfProtection);
 
 // Logging
 app.use(requestLogger);
@@ -104,6 +137,7 @@ app.get('/api/health', async (_req, res) => {
 });
 
 // API routes
+app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/videos', videoRoutes);
@@ -111,7 +145,6 @@ app.use('/api/ebooks', ebookRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/mfa', mfaRoutes);
 app.use('/api/playback', playbackRoutes);
 
 // Error handling
@@ -160,6 +193,13 @@ const startServer = async () => {
   });
 };
 
-if (process.env.NODE_ENV !== 'test') {
+const isServerless = Boolean(
+  process.env.NETLIFY ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME ||
+  process.env.SERVERLESS ||
+  process.env.VERCEL
+);
+
+if (process.env.NODE_ENV !== 'test' && !isServerless) {
   startServer();
 }

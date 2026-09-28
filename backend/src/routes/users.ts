@@ -2,6 +2,8 @@ import express from 'express';
 import { auth } from '../middleware/auth';
 import { requireRole, canManageUser } from '../middleware/authorization';
 import prisma from '../config/prisma';
+import { validateBody } from '../middleware/validators';
+import { UserUpdateSchema } from '../middleware/validation';
 
 const router = express.Router();
 
@@ -55,7 +57,7 @@ router.get('/:id', auth, canManageUser, async (req: any, res) => {
 });
 
 // Update user
-router.put('/:id', auth, canManageUser, async (req: any, res) => {
+router.put('/:id', auth, canManageUser, validateBody(UserUpdateSchema), async (req: any, res) => {
   try {
     const { name, avatar } = req.body;
 

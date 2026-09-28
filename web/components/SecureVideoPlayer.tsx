@@ -2,14 +2,18 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { DynamicWatermark } from './DynamicWatermark';
+import { getCsrfToken } from '@/lib/api';
 
 interface VideoPlayerProps {
   videoId: string;
-  authToken: string;
   backendUrl?: string;
 }
 
-export const SecureVideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, authToken, backendUrl = 'http://localhost:5000' }) => {
+export const SecureVideoPlayer: React.FC<VideoPlayerProps> = ({
+  videoId,
+  backendUrl = process.env.NEXT_PUBLIC_API_URL ||
+    (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api'),
+}) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [playbackData, setPlaybackData] = useState<any>(null);
@@ -19,11 +23,12 @@ export const SecureVideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, authTok
   useEffect(() => {
     const initPlayback = async () => {
       try {
-        const response = await fetch(`${backendUrl}/api/videos/${videoId}/playback-session`, {
+        const response = await fetch(`${backendUrl.replace(/\/$/, '')}/playback/${videoId}/playback-session`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${authToken}`,
+            'X-CSRF-Token': getCsrfToken() || '',
             'X-Device-ID': getOrCreateDeviceId()
           }
         });
@@ -40,10 +45,10 @@ export const SecureVideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, authTok
       }
     };
 
-    if (videoId && authToken) {
+    if (videoId) {
       initPlayback();
     }
-  }, [videoId, authToken, backendUrl]);
+  }, [videoId, backendUrl]);
 
   // 2. Initialize Video Player with HLS / HTML5 Video Stream
   useEffect(() => {
@@ -61,8 +66,9 @@ export const SecureVideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, authTok
         if (Hls.isSupported()) {
           hlsInstance = new Hls({
             xhrSetup: (xhr: XMLHttpRequest, url: string) => {
-              if (url.includes('/hls-key') || url.includes('/playback')) {
-                xhr.setRequestHeader('Authorization', `Bearer ${authToken}`);
+              xhr.withCredentials = true;
+              if (url.includes('/hls-key')) {
+                xhr.setRequestHeader('X-Playback-Session', playbackData.sessionToken);
               }
             }
           });
@@ -95,7 +101,7 @@ export const SecureVideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, authTok
         hlsInstance.destroy();
       }
     };
-  }, [playbackData, authToken]);
+  }, [playbackData]);
 
   // Helper device ID generator
   const getOrCreateDeviceId = () => {

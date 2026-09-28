@@ -1,9 +1,10 @@
 import request from 'supertest';
 import app from '../app';
 
-describe('Gallery auth and validation integration', () => {
-  it('GET /api/gallery returns 401 without token', async () => {
+describe('Public gallery listing', () => {
+  it('GET /api/gallery is available without a token', async () => {
     const res = await request(app).get('/api/gallery');
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('items');
   });
 });

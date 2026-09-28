@@ -2,13 +2,12 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '@/lib/api';
 
 interface Video {
-  _id: string;
+  id: string;
   title: string;
   description: string;
-  url: string;
-  thumbnail: string;
-  category: string;
-  duration: number;
+  thumbnailUrl: string | null;
+  category: { id: string; name: string } | null;
+  durationSeconds: number;
   createdAt: string;
 }
 
@@ -31,7 +30,7 @@ export const fetchVideos = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get('/videos');
-      return response.data;
+      return response.data.videos;
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       return rejectWithValue(err.response?.data?.message || 'Failed to fetch videos');

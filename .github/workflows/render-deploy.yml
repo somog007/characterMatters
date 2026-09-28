@@ -11,5 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Render Deploy Hook
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
-          curl -X POST "https://api.render.com/deploy/srv-d48c1hbipnbc73ddgvcg?key=5sBoF-5bJwM"
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "RENDER_DEPLOY_HOOK_URL secret is required" >&2
+            exit 1
+          fi
+          curl --fail --silent --show-error --retry 3 --request POST "$RENDER_DEPLOY_HOOK_URL"

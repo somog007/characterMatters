@@ -13,7 +13,6 @@ import { SecureVideoPlayer } from '@/components/SecureVideoPlayer';
 export default function Videos() {
   const dispatch = useAppDispatch();
   const { videos, loading, error } = useAppSelector((state) => state.videos);
-  const token = useAppSelector((state) => state.auth.token) || (typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '');
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,7 +47,7 @@ export default function Videos() {
                 >
                   ✕
                 </button>
-                <SecureVideoPlayer videoId={selectedVideoId} authToken={token} />
+                <SecureVideoPlayer videoId={selectedVideoId} />
               </div>
             </div>
           )}
@@ -63,14 +62,14 @@ export default function Videos() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {videos.map((video, index) => (
               <AnimatedCard 
-                key={video._id} 
+                key={video.id}
                 delay={index * 0.05}
                 className="bg-gradient-to-br from-purple-50 to-pink-50"
               >
                 <div className="aspect-video bg-gray-200 rounded-lg mb-4 overflow-hidden">
-                  {video.thumbnail ? (
+                  {video.thumbnailUrl ? (
                     <Image 
-                      src={video.thumbnail}
+                      src={video.thumbnailUrl}
                       alt={video.title}
                       width={640}
                       height={360}
@@ -88,10 +87,10 @@ export default function Videos() {
                 </p>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-500">
-                    {Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')} min
+                    {Math.floor(video.durationSeconds / 60)}:{(video.durationSeconds % 60).toString().padStart(2, '0')} min
                   </span>
                   <button
-                    onClick={() => setSelectedVideoId(video._id)}
+                    onClick={() => setSelectedVideoId(video.id)}
                     className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-full transition-colors text-sm"
                   >
                     Watch Now

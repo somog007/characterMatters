@@ -53,6 +53,11 @@ export const createPlaybackSession = async (req: AuthRequest, res: Response) => 
     const lesson = await prisma.lesson.findUnique({ where: { id: videoId } });
     if (!lesson) return res.status(404).json({ message: 'Video not found' });
 
+    const signingSecret = process.env.CDN_SIGNING_SECRET;
+    if (!signingSecret || signingSecret.length < 32) {
+      return res.status(503).json({ message: 'Video delivery signing is not configured' });
+    }
+
     // 2. Generate Cryptographic Playback Session Token
     const rawToken = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000); // 4 Hours valid session
@@ -72,7 +77,6 @@ export const createPlaybackSession = async (req: AuthRequest, res: Response) => 
 
     // 3. Generate Signed HLS Manifest URL
     const hlsPath = lesson.hlsManifestPath || lesson.videoUrl;
-    const signingSecret = process.env.CDN_SIGNING_SECRET || 'char-matters-cdn-secret-key-2026';
     const tokenExp = Math.floor(Date.now() / 1000) + 120; // 2 minute manifest loading window
 
     const signature = crypto

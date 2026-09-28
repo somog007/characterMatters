@@ -4,23 +4,34 @@ import prisma from '../config/prisma';
 
 export const getAllEbooks = async (req: Request, res: Response) => {
   try {
-    const { page = '1', limit = '20' } = req.query;
-    const skip = (Number(page) - 1) * Number(limit);
+    const page = Math.max(1, Number.parseInt(String(req.query.page ?? '1'), 10) || 1);
+    const limit = Math.min(100, Math.max(1, Number.parseInt(String(req.query.limit ?? '20'), 10) || 20));
+    const skip = (page - 1) * limit;
 
     const [ebooks, total] = await Promise.all([
       prisma.ebook.findMany({
         where: { isPublished: true },
         skip,
-        take: Number(limit),
+        take: limit,
         orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          author: true,
+          coverUrl: true,
+          price: true,
+          accessTier: true,
+          createdAt: true,
+        },
       }),
       prisma.ebook.count({ where: { isPublished: true } }),
     ]);
 
     res.json({
       ebooks,
-      page: Number(page),
-      totalPages: Math.ceil(total / Number(limit)),
+      page,
+      totalPages: Math.ceil(total / limit),
       total,
     });
   } catch (error: any) {
@@ -30,7 +41,19 @@ export const getAllEbooks = async (req: Request, res: Response) => {
 
 export const getEbookById = async (req: Request, res: Response) => {
   try {
-    const ebook = await prisma.ebook.findUnique({ where: { id: req.params.id } });
+    const ebook = await prisma.ebook.findFirst({
+      where: { id: req.params.id, isPublished: true },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        author: true,
+        coverUrl: true,
+        price: true,
+        accessTier: true,
+        createdAt: true,
+      },
+    });
     if (!ebook) return res.status(404).json({ message: 'eBook not found' });
 
     res.json(ebook);

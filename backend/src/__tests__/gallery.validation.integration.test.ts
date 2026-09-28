@@ -1,6 +1,7 @@
 jest.mock('../middleware/auth', () => ({
+  csrfProtection: (_req: any, _res: any, next: any) => next(),
   auth: (req: any, _res: any, next: any) => {
-    req.user = { _id: '507f1f77bcf86cd799439011', role: 'admin', name: 'Admin' };
+    req.user = { id: '507f1f77bcf86cd799439011', role: 'ADMIN', fullName: 'Admin' };
     next();
   },
   adminAuth: (_req: any, _res: any, next: any) => next(),

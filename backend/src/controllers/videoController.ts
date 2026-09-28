@@ -4,8 +4,10 @@ import prisma from '../config/prisma';
 
 export const getAllVideos = async (req: Request, res: Response) => {
   try {
-    const { page = '1', limit = '20', ageGroup, accessTier } = req.query;
-    const skip = (Number(page) - 1) * Number(limit);
+    const page = Math.max(1, Number.parseInt(String(req.query.page ?? '1'), 10) || 1);
+    const limit = Math.min(100, Math.max(1, Number.parseInt(String(req.query.limit ?? '20'), 10) || 20));
+    const skip = (page - 1) * limit;
+    const { ageGroup, accessTier } = req.query;
 
     const where: any = { isPublished: true };
     if (ageGroup) where.ageGroup = ageGroup;
@@ -15,7 +17,7 @@ export const getAllVideos = async (req: Request, res: Response) => {
       prisma.lesson.findMany({
         where,
         skip,
-        take: Number(limit),
+        take: limit,
         orderBy: { createdAt: 'desc' },
         include: { category: true },
       }),
@@ -23,9 +25,19 @@ export const getAllVideos = async (req: Request, res: Response) => {
     ]);
 
     res.json({
-      videos,
-      page: Number(page),
-      totalPages: Math.ceil(total / Number(limit)),
+      videos: videos.map(({ id, title, description, ageGroup: group, accessTier: tier, thumbnailUrl, durationSeconds, createdAt, category }) => ({
+        id,
+        title,
+        description,
+        ageGroup: group,
+        accessTier: tier,
+        thumbnailUrl,
+        durationSeconds,
+        createdAt,
+        category,
+      })),
+      page,
+      totalPages: Math.ceil(total / limit),
       total,
     });
   } catch (error: any) {
@@ -36,13 +48,14 @@ export const getAllVideos = async (req: Request, res: Response) => {
 export const getVideoById = async (req: Request, res: Response) => {
   try {
     const video = await prisma.lesson.findUnique({
-      where: { id: req.params.id },
+      where: { id: req.params.id, isPublished: true },
       include: { category: true },
     });
 
     if (!video) return res.status(404).json({ message: 'Video not found' });
 
-    res.json(video);
+    const { id, title, description, ageGroup, accessTier, thumbnailUrl, durationSeconds, createdAt, category } = video;
+    res.json({ id, title, description, ageGroup, accessTier, thumbnailUrl, durationSeconds, createdAt, category });
   } catch (error: any) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

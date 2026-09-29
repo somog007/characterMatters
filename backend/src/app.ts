@@ -128,8 +128,9 @@ app.get('/api/health', async (_req, res) => {
   } catch {
     dbStatus = 'error';
   }
-  res.status(200).json({
-    status: 'ok',
+  const healthy = dbStatus === 'connected';
+  res.status(healthy ? 200 : 503).json({
+    status: healthy ? 'ok' : 'error',
     uptime: process.uptime(),
     database: dbStatus,
     timestamp: new Date().toISOString(),
@@ -159,6 +160,9 @@ const startServer = async () => {
     logger.info({ message: 'Connected to PostgreSQL via Prisma' });
   } catch (error) {
     logger.error({ message: 'PostgreSQL connection error', error });
+    await prisma.$disconnect();
+    process.exitCode = 1;
+    return;
   }
 
   const PORT = process.env.PORT || 5000;

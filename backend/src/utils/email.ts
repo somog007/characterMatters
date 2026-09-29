@@ -1,6 +1,12 @@
 import sgMail from '@sendgrid/mail';
+import { Client } from '@sendgrid/client';
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+const sendGridClient = new Client();
+sendGridClient.setApiKey(process.env.SENDGRID_API_KEY!);
+if (process.env.SENDGRID_DATA_RESIDENCY === 'eu') {
+  sendGridClient.setDataResidency('eu');
+}
+sgMail.setClient(sendGridClient);
 
 export const sendWelcomeEmail = async (email: string, name: string) => {
   const msg = {

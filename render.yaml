@@ -6,9 +6,12 @@ services:
     plan: free
     buildCommand: npm ci && npm run build
     startCommand: node dist/app.js
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
         value: 20
+      - key: NODE_ENV
+        value: production
       - key: PORT
         value: 5000
       - key: DATABASE_URL
@@ -26,6 +29,8 @@ services:
       - key: PAYSTACK_CALLBACK_URL
         sync: false
       - key: SENDGRID_API_KEY
+        sync: false
+      - key: SENDGRID_DATA_RESIDENCY
         sync: false
       - key: FROM_EMAIL
         sync: false

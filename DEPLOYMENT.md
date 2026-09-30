@@ -18,6 +18,8 @@ The application uses Next.js, an Express API, PostgreSQL through Prisma, and Pay
    - `SENTRY_DSN` and `REDIS_URL` only if those services are configured
 4. Deploy and inspect Netlify build and function logs.
 
+The Netlify function in `web/functions/api.ts` imports the API from `backend/src/app.ts`; it uses the root/backend Prisma 5 workspace and generated client. The separate `characterMatters/` directory is a different Prisma 8 Composer app and does not change the function's runtime. Netlify builds now check Prisma package versions, compile the backend, and run its tests before publishing.
+
 ## Render API Alternative
 1. Create a Render Web Service connected to this repository, using `backend` as its root directory.
 2. Use the Blueprint build and start commands from `render.yaml` (`npm ci && npm run build`, then `node dist/app.js`).

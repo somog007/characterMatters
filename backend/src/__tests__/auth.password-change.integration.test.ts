@@ -13,6 +13,7 @@ jest.mock('../config/prisma', () => ({
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
 import app from '../app';
+import { logger } from '../middleware/logger';
 import { AuthChangePasswordSchema, AuthRegisterSchema } from '../middleware/validation';
 
 describe('First-login password change', () => {
@@ -117,5 +118,35 @@ describe('First-login password change', () => {
       .send({ currentPassword: temporaryPassword, newPassword: 'short' });
     expect(weakNewPassword.status).toBe(400);
     expect(mockPrisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it('returns a generic login error and logs database diagnostics without credentials', async () => {
+    const agent = request.agent(app);
+    const csrf = await agent.get('/api/auth/csrf');
+    const databaseError = Object.assign(
+      new Error('Could not connect to postgresql://db_user:secret@db.example.test/app'),
+      { code: 'P1001' }
+    );
+    mockPrisma.user.findUnique.mockRejectedValueOnce(databaseError);
+    const errorLog = jest.spyOn(logger, 'error');
+
+    try {
+      const login = await agent
+        .post('/api/auth/login')
+        .set('X-CSRF-Token', csrf.body.csrfToken)
+        .send({ email: user.email, password: temporaryPassword });
+
+      expect(login.status).toBe(500);
+      expect(login.body).toEqual({ message: 'Internal server error' });
+      expect(errorLog).toHaveBeenCalledWith(expect.objectContaining({
+        message: 'Login failed',
+        errorType: 'Error',
+        errorCode: 'P1001',
+        errorMessage: expect.stringContaining('[REDACTED_DATABASE_URL]'),
+      }));
+      expect(JSON.stringify(errorLog.mock.calls)).not.toContain('secret');
+    } finally {
+      errorLog.mockRestore();
+    }
   });
 });

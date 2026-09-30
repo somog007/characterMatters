@@ -1,7 +1,7 @@
 [build]
   # Build from the web folder
   base = "web"
-  command = "cd .. && npm ci --include=dev && npm run prisma:generate && cd web && npm run build"
+  command = "cd .. && npm ci --include=dev && npm run prisma:check-versions && npm --prefix backend run build && npm --prefix backend test -- --runInBand && cd web && npm run build"
   functions = "functions"
 
 [functions]

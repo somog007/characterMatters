@@ -13,7 +13,8 @@
     "build": "npm --prefix backend run build && npm --prefix web run build && npm --prefix welcome run build",
     "install:all": "npm --prefix backend install && npm --prefix web install && npm --prefix welcome install",
     "prisma:generate": "npm --prefix backend run prisma:generate",
-    "prisma:deploy": "npm --prefix backend run prisma:deploy"
+    "prisma:deploy": "npm --prefix backend run prisma:deploy",
+    "prisma:check-versions": "node scripts/check-prisma-versions.cjs"
   },
   "workspaces": [
     "backend",

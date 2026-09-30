@@ -94,22 +94,36 @@ app.use(express.urlencoded({ extended: true, limit: '1mb', parameterLimit: 100 }
 app.use(compression());
 
 // CORS
-app.use(
-  cors({
+const corsOptions: cors.CorsOptions = {
     origin: (origin, callback) => {
-      const allowed = [
+      const allowedOrigins = [
         process.env.FRONTEND_URL,
         ...(process.env.NODE_ENV === 'production'
           ? []
           : ['http://localhost:3000', 'http://localhost:3001']),
       ].filter(Boolean) as string[];
       // Allow requests with no origin like curl/postman or same-origin
-      if (!origin || allowed.includes(origin)) return callback(null, true);
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
       return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
-  })
-);
+};
+
+app.use((req, res, next) => {
+  const origin = req.get('origin');
+  const host = req.get('host');
+
+  if (origin && host) {
+    try {
+      const requestOrigin = new URL(`${req.protocol}://${host}`).origin;
+      if (new URL(origin).origin === requestOrigin) return next();
+    } catch {
+      // Invalid Origin headers continue through the configured allowlist.
+    }
+  }
+
+  return cors(corsOptions)(req, res, next);
+});
 
 app.use(cookieParser());
 app.use(csrfProtection);

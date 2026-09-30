@@ -36,6 +36,26 @@ describe('Health endpoints', () => {
 });
 
 describe('Production CORS', () => {
+  it('allows same-origin requests when FRONTEND_URL is not configured', async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    const previousFrontendUrl = process.env.FRONTEND_URL;
+    process.env.NODE_ENV = 'production';
+    delete process.env.FRONTEND_URL;
+
+    try {
+      const res = await request(app)
+        .get('/')
+        .set('Host', 'charactermattersng.org')
+        .set('Origin', 'http://charactermattersng.org');
+
+      expect(res.status).toBe(200);
+    } finally {
+      process.env.NODE_ENV = previousNodeEnv;
+      if (previousFrontendUrl === undefined) delete process.env.FRONTEND_URL;
+      else process.env.FRONTEND_URL = previousFrontendUrl;
+    }
+  });
+
   it('does not allow localhost origins in production', async () => {
     const previousNodeEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';

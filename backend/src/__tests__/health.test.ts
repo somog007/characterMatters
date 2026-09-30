@@ -34,3 +34,19 @@ describe('Health endpoints', () => {
     expect(res.body.database).toBe('error');
   });
 });
+
+describe('Production CORS', () => {
+  it('does not allow localhost origins in production', async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+
+    try {
+      const res = await request(app)
+        .get('/')
+        .set('Origin', 'http://localhost:3000');
+      expect(res.headers['access-control-allow-origin']).toBeUndefined();
+    } finally {
+      process.env.NODE_ENV = previousNodeEnv;
+    }
+  });
+});

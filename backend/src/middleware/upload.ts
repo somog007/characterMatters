@@ -1,9 +1,11 @@
 import multer from 'multer';
+import os from 'os';
 import path from 'path';
 import fs from 'fs';
+import { Request, Response, NextFunction } from 'express';
 
 // Local file storage (staging area before Cloudinary upload)
-const uploadDir = path.join(__dirname, '../../uploads');
+const uploadDir = path.join(os.tmpdir(), 'character-matters-uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -62,3 +64,26 @@ export const upload = multer({
     }
   },
 });
+
+export const cleanupUploadedFiles = (req: Request, res: Response, next: NextFunction) => {
+  let cleaned = false;
+  const cleanup = () => {
+    if (cleaned) return;
+    cleaned = true;
+
+    const files = req.files;
+    const uploadedFiles = [
+      ...(req.file ? [req.file] : []),
+      ...(Array.isArray(files) ? files : files ? Object.values(files).flat() : []),
+    ] as Array<{ path?: string }>;
+
+    for (const file of uploadedFiles) {
+      if (file.path) void fs.promises.unlink(file.path).catch(() => undefined);
+    }
+  };
+
+  res.once('finish', cleanup);
+  res.once('close', cleanup);
+
+  next();
+};

@@ -7,13 +7,13 @@ import {
   deleteEbook,
 } from '../controllers/ebookController';
 import { auth, adminAuth } from '../middleware/auth';
-import { upload } from '../middleware/upload';
+import { cleanupUploadedFiles, upload } from '../middleware/upload';
 
 const router = express.Router();
 
 router.get('/', getAllEbooks);
 router.get('/:id', getEbookById);
-router.post('/', auth, adminAuth, upload.fields([
+router.post('/', auth, adminAuth, cleanupUploadedFiles, upload.fields([
   { name: 'coverImage', maxCount: 1 },
   { name: 'ebookFile', maxCount: 1 },
 ]), createEbook);

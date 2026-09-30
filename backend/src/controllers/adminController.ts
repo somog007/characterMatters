@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/prisma';
+import { handleControllerError } from '../utils/handleControllerError';
 
 export const getAdminMetrics = async (req: AuthRequest, res: Response) => {
   try {
@@ -24,8 +25,8 @@ export const getAdminMetrics = async (req: AuthRequest, res: Response) => {
         activeSubscriptions,
       },
     });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Admin metrics retrieval failed', error);
   }
 };
 
@@ -54,8 +55,8 @@ export const getAdminUsers = async (req: AuthRequest, res: Response) => {
     });
 
     res.json({ users });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Admin user listing failed', error);
   }
 };
 
@@ -68,8 +69,8 @@ export const getAdminSubscriptions = async (req: AuthRequest, res: Response) => 
     });
 
     res.json({ recentSubscriptions });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Admin subscription listing failed', error);
   }
 };
 
@@ -88,8 +89,8 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
     });
 
     res.json({ message: 'User role updated', user: updated });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Admin role update failed', error);
   }
 };
 
@@ -137,8 +138,8 @@ export const assignUserSubscription = async (req: AuthRequest, res: Response) =>
     });
 
     res.json({ message: `Subscription assigned successfully to ${email}`, subscription });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Admin subscription assignment failed', error);
   }
 };
 

@@ -98,9 +98,10 @@ app.use(
   cors({
     origin: (origin, callback) => {
       const allowed = [
-        'http://localhost:3000',
-        'http://localhost:3001',
         process.env.FRONTEND_URL,
+        ...(process.env.NODE_ENV === 'production'
+          ? []
+          : ['http://localhost:3000', 'http://localhost:3001']),
       ].filter(Boolean) as string[];
       // Allow requests with no origin like curl/postman or same-origin
       if (!origin || allowed.includes(origin)) return callback(null, true);

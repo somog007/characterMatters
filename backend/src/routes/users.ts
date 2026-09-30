@@ -2,6 +2,7 @@ import express from 'express';
 import { auth } from '../middleware/auth';
 import { requireRole, canManageUser } from '../middleware/authorization';
 import prisma from '../config/prisma';
+import { handleControllerError } from '../utils/handleControllerError';
 import { validateBody } from '../middleware/validators';
 import { UserUpdateSchema } from '../middleware/validation';
 
@@ -23,8 +24,8 @@ router.get('/', auth, requireRole('ADMIN'), async (req: any, res) => {
       },
     });
     res.json({ users });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  } catch (error) {
+    handleControllerError(res, 'User listing failed', error);
   }
 });
 
@@ -51,8 +52,8 @@ router.get('/:id', auth, canManageUser, async (req: any, res) => {
     }
 
     res.json(user);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  } catch (error) {
+    handleControllerError(res, 'User retrieval failed', error);
   }
 });
 
@@ -77,8 +78,8 @@ router.put('/:id', auth, canManageUser, validateBody(UserUpdateSchema), async (r
     });
 
     res.json(user);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  } catch (error) {
+    handleControllerError(res, 'User update failed', error);
   }
 });
 
@@ -87,8 +88,8 @@ router.delete('/:id', auth, requireRole('ADMIN'), async (req: any, res) => {
   try {
     await prisma.user.delete({ where: { id: req.params.id } });
     res.json({ message: 'User deleted successfully' });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  } catch (error) {
+    handleControllerError(res, 'User deletion failed', error);
   }
 });
 

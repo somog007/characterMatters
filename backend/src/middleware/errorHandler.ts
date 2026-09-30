@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { logger } from './logger';
 
 export class AppError extends Error {
   public statusCode: number;
@@ -22,8 +23,11 @@ export const errorHandler = (
   let error = { ...err };
   error.message = err.message;
 
-  // Log error
-  console.error(err);
+  if (process.env.NODE_ENV === 'production') {
+    logger.error({ message: 'Unhandled request error', errorType: err.name });
+  } else {
+    console.error(err);
+  }
 
   // Mongoose bad ObjectId
   if (err.name === 'CastError') {
@@ -45,7 +49,9 @@ export const errorHandler = (
   }
 
   const statusCode = (error as AppError).statusCode || 500;
-  const message = error.message || 'Server Error';
+  const message = statusCode >= 500 && process.env.NODE_ENV === 'production'
+    ? 'Internal server error'
+    : error.message || 'Server Error';
 
   res.status(statusCode).json({
     success: false,

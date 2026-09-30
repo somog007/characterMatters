@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/prisma';
+import { handleControllerError } from '../utils/handleControllerError';
 
 export const getAllGalleryItems = async (req: Request, res: Response) => {
   try {
@@ -29,8 +30,8 @@ export const getAllGalleryItems = async (req: Request, res: Response) => {
       totalPages: Math.ceil(total / limit),
       total,
     });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Gallery listing failed', error);
   }
 };
 
@@ -40,8 +41,8 @@ export const getGalleryItemById = async (req: Request, res: Response) => {
     if (!item) return res.status(404).json({ message: 'Gallery item not found' });
 
     res.json(item);
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Gallery item retrieval failed', error);
   }
 };
 
@@ -64,8 +65,8 @@ export const createGalleryItem = async (req: AuthRequest, res: Response) => {
     });
 
     res.status(201).json(item);
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Gallery item creation failed', error);
   }
 };
 
@@ -80,8 +81,8 @@ export const updateGalleryItem = async (req: AuthRequest, res: Response) => {
     });
 
     res.json(updated);
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Gallery item update failed', error);
   }
 };
 
@@ -93,7 +94,7 @@ export const deleteGalleryItem = async (req: AuthRequest, res: Response) => {
     await prisma.galleryItem.delete({ where: { id: req.params.id } });
 
     res.json({ message: 'Gallery item deleted successfully' });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Gallery item deletion failed', error);
   }
 };

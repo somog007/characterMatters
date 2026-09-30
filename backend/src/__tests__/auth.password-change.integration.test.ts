@@ -13,6 +13,7 @@ jest.mock('../config/prisma', () => ({
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
 import app from '../app';
+import { AuthChangePasswordSchema, AuthRegisterSchema } from '../middleware/validation';
 
 describe('First-login password change', () => {
   const temporaryPassword = 'temporary-password';
@@ -40,6 +41,19 @@ describe('First-login password change', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('requires strong passwords within bcrypt byte limits at registration and change', () => {
+    const validPassword = 'a-strong-password';
+    const userData = { name: 'Test User', email: 'test@example.com', password: validPassword };
+
+    expect(AuthRegisterSchema.safeParse(userData).success).toBe(true);
+    expect(AuthRegisterSchema.safeParse({ ...userData, password: 'short' }).success).toBe(false);
+    expect(AuthRegisterSchema.safeParse({ ...userData, password: 'a'.repeat(73) }).success).toBe(false);
+    expect(AuthChangePasswordSchema.safeParse({
+      currentPassword: 'old-password',
+      newPassword: validPassword,
+    }).success).toBe(true);
   });
 
   it('restricts the temporary login token until password change succeeds', async () => {

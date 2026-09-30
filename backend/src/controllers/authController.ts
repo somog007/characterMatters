@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { AuthRequest, getJwtSecret } from '../middleware/auth';
 import prisma from '../config/prisma';
+import { handleControllerError } from '../utils/handleControllerError';
 import { clearSessionCookies, issueCsrfCookie, issueSessionCookies } from '../utils/sessionCookies';
 
 export const register = async (req: AuthRequest, res: Response) => {
@@ -37,8 +38,8 @@ export const register = async (req: AuthRequest, res: Response) => {
         role: user.role,
       },
     });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Registration failed', error);
   }
 };
 
@@ -82,8 +83,8 @@ export const login = async (req: AuthRequest, res: Response) => {
         role: user.role,
       },
     });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Login failed', error);
   }
 };
 
@@ -155,8 +156,8 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
       subscription: user.subscription,
       createdAt: user.createdAt,
     });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Profile retrieval failed', error);
   }
 };
 
@@ -181,7 +182,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       role: user.role,
       avatar: user.avatar,
     });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Profile update failed', error);
   }
 };

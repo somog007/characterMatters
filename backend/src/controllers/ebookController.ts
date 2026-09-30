@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/prisma';
+import { handleControllerError } from '../utils/handleControllerError';
 
 export const getAllEbooks = async (req: Request, res: Response) => {
   try {
@@ -34,8 +35,8 @@ export const getAllEbooks = async (req: Request, res: Response) => {
       totalPages: Math.ceil(total / limit),
       total,
     });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'eBook listing failed', error);
   }
 };
 
@@ -57,8 +58,8 @@ export const getEbookById = async (req: Request, res: Response) => {
     if (!ebook) return res.status(404).json({ message: 'eBook not found' });
 
     res.json(ebook);
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'eBook retrieval failed', error);
   }
 };
 
@@ -79,8 +80,8 @@ export const createEbook = async (req: AuthRequest, res: Response) => {
     });
 
     res.status(201).json(ebook);
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'eBook creation failed', error);
   }
 };
 
@@ -95,8 +96,8 @@ export const updateEbook = async (req: AuthRequest, res: Response) => {
     });
 
     res.json(updated);
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'eBook update failed', error);
   }
 };
 
@@ -108,7 +109,7 @@ export const deleteEbook = async (req: AuthRequest, res: Response) => {
     await prisma.ebook.delete({ where: { id: req.params.id } });
 
     res.json({ message: 'eBook deleted successfully' });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'eBook deletion failed', error);
   }
 };

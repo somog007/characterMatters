@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth';
 import prisma from '../config/prisma';
+import { handleControllerError } from '../utils/handleControllerError';
 
 // Access tier hierarchy — higher tiers include all lower tiers
 const TIER_HIERARCHY: Record<string, number> = {
@@ -87,6 +88,6 @@ export const authorizeVideoCategoryAccess = async (req: AuthRequest, res: Respon
     });
 
   } catch (error) {
-    return res.status(500).json({ message: 'Server error authorizing video access', error });
+    return handleControllerError(res, 'Video access authorization failed', error);
   }
 };

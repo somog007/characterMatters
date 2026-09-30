@@ -2,6 +2,7 @@ import { Response } from 'express';
 import crypto from 'crypto';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/prisma';
+import { handleControllerError } from '../utils/handleControllerError';
 
 export const createPlaybackSession = async (req: AuthRequest, res: Response) => {
   try {
@@ -111,6 +112,6 @@ export const createPlaybackSession = async (req: AuthRequest, res: Response) => 
       },
     });
   } catch (error) {
-    return res.status(500).json({ message: 'Failed to create playback session', error });
+    return handleControllerError(res, 'Playback session creation failed', error);
   }
 };

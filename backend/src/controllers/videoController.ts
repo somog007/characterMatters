@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/prisma';
+import { handleControllerError } from '../utils/handleControllerError';
 
 export const getAllVideos = async (req: Request, res: Response) => {
   try {
@@ -25,23 +26,24 @@ export const getAllVideos = async (req: Request, res: Response) => {
     ]);
 
     res.json({
-      videos: videos.map(({ id, title, description, ageGroup: group, accessTier: tier, thumbnailUrl, durationSeconds, createdAt, category }) => ({
-        id,
-        title,
-        description,
-        ageGroup: group,
-        accessTier: tier,
-        thumbnailUrl,
-        durationSeconds,
-        createdAt,
-        category,
+      videos: videos.map((v: any) => ({
+        id: v.id,
+        title: v.title,
+        description: v.description,
+        ageGroup: v.ageGroup,
+        accessTier: v.accessTier,
+        thumbnailUrl: v.thumbnailUrl,
+        durationSeconds: v.durationSeconds,
+        price: v.price ? Number(v.price) : 50000,
+        createdAt: v.createdAt,
+        category: v.category,
       })),
       page,
       totalPages: Math.ceil(total / limit),
       total,
     });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Video listing failed', error);
   }
 };
 
@@ -54,16 +56,27 @@ export const getVideoById = async (req: Request, res: Response) => {
 
     if (!video) return res.status(404).json({ message: 'Video not found' });
 
-    const { id, title, description, ageGroup, accessTier, thumbnailUrl, durationSeconds, createdAt, category } = video;
-    res.json({ id, title, description, ageGroup, accessTier, thumbnailUrl, durationSeconds, createdAt, category });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    const { id, title, description, ageGroup, accessTier, thumbnailUrl, durationSeconds, price, createdAt, category } = video as any;
+    res.json({
+      id,
+      title,
+      description,
+      ageGroup,
+      accessTier,
+      thumbnailUrl,
+      durationSeconds,
+      price: price ? Number(price) : 50000,
+      createdAt,
+      category,
+    });
+  } catch (error) {
+    handleControllerError(res, 'Video retrieval failed', error);
   }
 };
 
 export const createVideo = async (req: AuthRequest, res: Response) => {
   try {
-    const { title, description, ageGroup, accessTier, videoUrl, thumbnailUrl, worksheetUrl, durationSeconds, categoryId } = req.body;
+    const { title, description, ageGroup, accessTier, videoUrl, thumbnailUrl, worksheetUrl, durationSeconds, price, categoryId } = req.body;
 
     const video = await prisma.lesson.create({
       data: {
@@ -75,13 +88,14 @@ export const createVideo = async (req: AuthRequest, res: Response) => {
         thumbnailUrl,
         worksheetUrl,
         durationSeconds: durationSeconds || 0,
+        price: price || 50000,
         categoryId,
       },
     });
 
     res.status(201).json(video);
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Video creation failed', error);
   }
 };
 
@@ -96,8 +110,8 @@ export const updateVideo = async (req: AuthRequest, res: Response) => {
     });
 
     res.json(updated);
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Video update failed', error);
   }
 };
 
@@ -109,7 +123,7 @@ export const deleteVideo = async (req: AuthRequest, res: Response) => {
     await prisma.lesson.delete({ where: { id: req.params.id } });
 
     res.json({ message: 'Video deleted successfully' });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Video deletion failed', error);
   }
 };

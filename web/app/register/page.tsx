@@ -50,8 +50,8 @@ export default function Register() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setLocalError('Password must be at least 6 characters long');
+    if (formData.password.length < 12) {
+      setLocalError('Password must be at least 12 characters long');
       return;
     }
 
@@ -123,7 +123,8 @@ export default function Register() {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                minLength={6}
+                minLength={12}
+                maxLength={72}
                 className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
                 placeholder="At least 6 characters"
               />

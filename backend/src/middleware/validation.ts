@@ -1,9 +1,17 @@
 import { z } from 'zod';
 
+const passwordSchema = z
+  .string()
+  .min(12)
+  .max(72)
+  .refine((password) => Buffer.byteLength(password, 'utf8') <= 72, {
+    message: 'Password must be 72 UTF-8 bytes or fewer',
+  });
+
 export const AuthRegisterSchema = z.object({
   name: z.string().trim().min(2).max(120),
   email: z.string().trim().email(),
-  password: z.string().min(6).max(128),
+  password: passwordSchema,
 });
 
 export const AuthLoginSchema = z.object({
@@ -13,7 +21,7 @@ export const AuthLoginSchema = z.object({
 
 export const AuthChangePasswordSchema = z.object({
   currentPassword: z.string().min(1).max(128),
-  newPassword: z.string().min(12).max(128),
+  newPassword: passwordSchema,
 });
 
 export const AuthUpdateProfileSchema = z.object({
@@ -24,7 +32,7 @@ export const AuthUpdateProfileSchema = z.object({
 export const UserCreateSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: passwordSchema,
 });
 
 export const UserUpdateSchema = z.object({

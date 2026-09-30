@@ -5,6 +5,7 @@ import prisma from '../config/prisma';
 import { initializePaystackTransaction, verifyPaystackTransaction } from '../utils/paystack';
 import { Prisma } from '@prisma/client';
 import { logger } from '../middleware/logger';
+import { handleControllerError } from '../utils/handleControllerError';
 
 const PACKAGE_PRICES_NGN: Record<string, number> = {
   package_1: 1_200_000,
@@ -77,8 +78,8 @@ export const startPaystackCheckout = async (req: AuthRequest, res: Response) => 
     });
 
     res.json({ authorizationUrl: transaction.authorization_url, reference: transaction.reference });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Paystack checkout initialization failed', error);
   }
 };
 
@@ -160,8 +161,8 @@ export const verifyPaystackCheckout = async (req: AuthRequest, res: Response) =>
     });
 
     res.json({ message: 'Subscription activated', subscription });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Paystack transaction verification failed', error);
   }
 };
 
@@ -188,8 +189,8 @@ export const cancelSubscription = async (req: AuthRequest, res: Response) => {
     });
 
     res.json({ message: 'Subscription canceled successfully', subscription: updated });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Subscription cancellation failed', error);
   }
 };
 
@@ -207,8 +208,8 @@ export const getSubscription = async (req: AuthRequest, res: Response) => {
     }
 
     res.json(subscription);
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Subscription retrieval failed', error);
   }
 };
 
@@ -311,8 +312,11 @@ export const handlePaystackWebhook = async (req: Request, res: Response) => {
     });
 
     return res.status(200).send('Webhook received');
-  } catch (error: any) {
-    logger.error({ message: 'Paystack webhook processing error', error: error.message });
+  } catch (error) {
+    logger.error({
+      message: 'Paystack webhook processing error',
+      errorType: error instanceof Error ? error.name : 'UnknownError',
+    });
     if (!res.headersSent) return res.status(500).send('Webhook processing failed');
   }
 };

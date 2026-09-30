@@ -8,6 +8,7 @@ interface Video {
   thumbnailUrl: string | null;
   category: { id: string; name: string } | null;
   durationSeconds: number;
+  price?: number;
   createdAt: string;
 }
 

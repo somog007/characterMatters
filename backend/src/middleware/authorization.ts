@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth';
 import prisma from '../config/prisma';
+import { handleControllerError } from '../utils/handleControllerError';
 
 export const requireRole = (...roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -33,8 +34,8 @@ export const canManageVideo = async (req: AuthRequest, res: Response, next: Next
 
     // Only admins can manage videos for now
     return res.status(403).json({ message: 'Forbidden: cannot manage this video' });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Authorization error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Video authorization failed', error);
   }
 };
 
@@ -54,8 +55,8 @@ export const canManageGallery = async (req: AuthRequest, res: Response, next: Ne
     }
 
     return res.status(403).json({ message: 'Forbidden: cannot manage this gallery item' });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Authorization error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'Gallery authorization failed', error);
   }
 };
 

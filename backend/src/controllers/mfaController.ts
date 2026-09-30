@@ -1,29 +1,37 @@
 import { Response } from 'express';
+import crypto from 'crypto';
 import { AuthRequest } from '../middleware/auth';
+import { handleControllerError } from '../utils/handleControllerError';
 
 const mfaStore = new Map<string, { code: string; expiresAt: number }>();
 
 export const requestMfaCode = async (req: AuthRequest, res: Response) => {
   try {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(503).json({ message: 'MFA is not available' });
+    }
     if (!req.user) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
     const userId = req.user.id;
-    const code = (Math.floor(100000 + Math.random() * 900000)).toString();
+    const code = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = Date.now() + 5 * 60 * 1000;
 
     mfaStore.set(userId, { code, expiresAt });
 
     // In production this should be sent via email/SMS; returning for development only.
     res.json({ message: 'MFA code generated', code, expiresAt });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'MFA code request failed', error);
   }
 };
 
 export const verifyMfaCode = async (req: AuthRequest, res: Response) => {
   try {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(503).json({ message: 'MFA is not available' });
+    }
     if (!req.user) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
@@ -43,7 +51,7 @@ export const verifyMfaCode = async (req: AuthRequest, res: Response) => {
 
     mfaStore.delete(userId);
     res.json({ message: 'MFA verified' });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (error) {
+    handleControllerError(res, 'MFA code verification failed', error);
   }
 };

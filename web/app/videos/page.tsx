@@ -85,13 +85,18 @@ export default function Videos() {
                 <p className="text-gray-600 mb-3 line-clamp-2">
                   {video.description}
                 </p>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-sm font-semibold text-purple-700 bg-purple-100 px-3 py-1 rounded-full">
+                    ₦{(video.price || 50000).toLocaleString()}
+                  </span>
                   <span className="text-sm text-gray-500">
                     {Math.floor(video.durationSeconds / 60)}:{(video.durationSeconds % 60).toString().padStart(2, '0')} min
                   </span>
+                </div>
+                <div className="flex justify-end items-center">
                   <button
                     onClick={() => setSelectedVideoId(video.id)}
-                    className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-full transition-colors text-sm"
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-4 rounded-full transition-colors text-sm shadow-md"
                   >
                     Watch Now
                   </button>

@@ -7,7 +7,7 @@ The application uses Next.js, an Express API, PostgreSQL through Prisma, and Pay
 1. Connect the repository to Netlify; `netlify.toml` configures the Next.js plugin and build.
 2. Set `NEXT_PUBLIC_SITE_URL` to the exact public site URL and `NEXT_PUBLIC_API_URL=/api` when using the Netlify function.
 3. For the Netlify-function API path, set these in Netlify's environment-variable settings:
-   - `DATABASE_URL` and `DIRECT_URL` for PostgreSQL
+   - `DATABASE_URL` and `DIRECT_URL` for PostgreSQL; set `DATABASE_URL_POOLED` to the provider's pooled connection URL for Netlify Functions (the runtime prefers it when present)
    - `JWT_SECRET` with at least 32 random characters
    - `FRONTEND_URL` to the exact public site origin
    - `PAYSTACK_SECRET_KEY` and `PAYSTACK_CALLBACK_URL`
@@ -26,7 +26,7 @@ The application uses Next.js, an Express API, PostgreSQL through Prisma, and Pay
 5. To route the frontend to Render, set `NEXT_PUBLIC_API_URL` to `https://<render-service-host>/api` and remove or disable the Netlify `/api/*` function redirect so requests are not intercepted by the function.
 
 ## Environment Variable Notes
-- `DIRECT_URL` should be the database provider's direct, non-pooled connection string for Prisma migrations.
+- `DIRECT_URL` should be the database provider's direct, non-pooled connection string for Prisma migrations. Netlify Functions prefer `DATABASE_URL_POOLED` for runtime queries and fall back to `DATABASE_URL` when it is unset.
 - `HLS_AES_128_MASTER_KEY` must be 32 hexadecimal characters (16 bytes) and match the key used to encrypt the HLS media.
 - `CDN_SIGNING_SECRET` must be at least 32 characters.
 - `PAYSTACK_PUBLIC_KEY` is not required by the current backend checkout flow. The frontend does not read `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`.

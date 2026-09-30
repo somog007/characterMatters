@@ -140,7 +140,15 @@ app.get('/api/health', async (_req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
     dbStatus = 'connected';
-  } catch {
+  } catch (error) {
+    const errorCode = typeof error === 'object' && error !== null && 'code' in error
+      ? error.code
+      : undefined;
+    logger.error({
+      message: 'Database health check failed',
+      errorType: error instanceof Error ? error.name : 'UnknownError',
+      ...(typeof errorCode === 'string' ? { errorCode } : {}),
+    });
     dbStatus = 'error';
   }
   const healthy = dbStatus === 'connected';

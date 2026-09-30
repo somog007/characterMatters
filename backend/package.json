@@ -8,9 +8,9 @@
     "dev": "nodemon",
     "build": "npx prisma generate && tsc",
     "test": "jest",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:deploy": "prisma migrate deploy"
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:deploy": "npx prisma migrate deploy"
   },
   "dependencies": {
     "@sendgrid/client": "8.1.6",

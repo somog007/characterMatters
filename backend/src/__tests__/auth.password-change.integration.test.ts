@@ -1,6 +1,7 @@
 const mockPrisma = {
   user: {
     findUnique: jest.fn(),
+    create: jest.fn(),
     update: jest.fn(),
   },
 };
@@ -72,6 +73,41 @@ describe('First-login password change', () => {
       currentPassword: 'old-password',
       newPassword: validPassword,
     }).success).toBe(true);
+  });
+
+  it('does not create an account when the JWT secret is missing', async () => {
+    const originalSecret = process.env.JWT_SECRET;
+    delete process.env.JWT_SECRET;
+
+    try {
+      const response = await request(app)
+        .post('/api/auth/register')
+        .send({ name: 'New User', email: 'new@example.com', password: 'a-strong-password' });
+
+      expect(response.status).toBe(500);
+      expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
+      expect(mockPrisma.user.create).not.toHaveBeenCalled();
+    } finally {
+      if (originalSecret === undefined) delete process.env.JWT_SECRET;
+      else process.env.JWT_SECRET = originalSecret;
+    }
+  });
+
+  it('does not query the account when the JWT secret is missing during login', async () => {
+    const originalSecret = process.env.JWT_SECRET;
+    delete process.env.JWT_SECRET;
+
+    try {
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ email: user.email, password: temporaryPassword });
+
+      expect(response.status).toBe(500);
+      expect(mockPrisma8.orm.public.User.where).not.toHaveBeenCalled();
+    } finally {
+      if (originalSecret === undefined) delete process.env.JWT_SECRET;
+      else process.env.JWT_SECRET = originalSecret;
+    }
   });
 
   it('restricts the temporary login token until password change succeeds', async () => {

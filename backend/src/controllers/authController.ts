@@ -9,6 +9,7 @@ import { clearSessionCookies, issueCsrfCookie, issueSessionCookies } from '../ut
 
 export const register = async (req: AuthRequest, res: Response) => {
   try {
+    const jwtSecret = getJwtSecret();
     const { name, email, password } = req.body;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -27,7 +28,7 @@ export const register = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    const token = jwt.sign({ userId: user.id }, getJwtSecret(), { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' });
     const csrfToken = issueSessionCookies(res, token, 7 * 24 * 60 * 60 * 1000);
 
     res.status(201).json({
@@ -46,6 +47,7 @@ export const register = async (req: AuthRequest, res: Response) => {
 
 export const login = async (req: AuthRequest, res: Response) => {
   try {
+    const jwtSecret = getJwtSecret();
     const { default: loadedPrisma8 } = await import('../config/prisma8.js');
     const prisma8 = loadedPrisma8 as unknown as typeof prisma8Client;
     const { email, password } = req.body;
@@ -67,7 +69,7 @@ export const login = async (req: AuthRequest, res: Response) => {
     const mustChangePassword = user.status === 'must_change_password';
     const token = jwt.sign(
       { userId: user.id, ...(mustChangePassword ? { passwordChangeOnly: true } : {}) },
-      getJwtSecret(),
+      jwtSecret,
       { expiresIn: mustChangePassword ? '15m' : '7d' }
     );
     const csrfToken = issueSessionCookies(

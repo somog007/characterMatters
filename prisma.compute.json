@@ -1,0 +1,6 @@
+{
+  "app": {
+    "root": "characterMatters",
+    "framework": "nextjs"
+  }
+}

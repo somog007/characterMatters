@@ -34,6 +34,7 @@
     "temporal-polyfill": "1.0.5"
   },
   "devDependencies": {
+    "@prisma/prisma7": "7.10.0",
     "@types/node": "^22.0.0",
     "prisma": "8.0.0-rc.18"
   },

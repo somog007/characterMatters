@@ -1,7 +1,7 @@
 [build]
   # Build from the web folder
   base = "web"
-  command = "cd .. && npm ci --legacy-peer-deps --include=dev --workspaces=true && npm run prisma:check-versions && npm run prisma8:generate && npm --prefix backend run build && NODE_ENV=test npm --prefix backend test -- --runInBand && cd web && npm run build"
+  command = "cd .. && npm ci --legacy-peer-deps --include=dev --workspaces=true --include-workspace-root && npm run prisma:check-versions && npm run prisma8:generate && npm --prefix backend run build && NODE_ENV=test npm --prefix backend test -- --runInBand && cd web && npm run build"
   functions = "functions"
 
 [functions]

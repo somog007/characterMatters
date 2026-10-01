@@ -5,7 +5,7 @@ node_modules/
 
 # Production
 dist/
-src/generated/
+src/generated/prisma/
 
 # Environment variables
 .env

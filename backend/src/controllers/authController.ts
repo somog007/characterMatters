@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { AuthRequest, getJwtSecret } from '../middleware/auth';
 import prisma from '../config/prisma';
+import prisma8 from '../config/prisma8';
 import { handleControllerError } from '../utils/handleControllerError';
 import { clearSessionCookies, issueCsrfCookie, issueSessionCookies } from '../utils/sessionCookies';
 
@@ -47,7 +48,7 @@ export const login = async (req: AuthRequest, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma8.orm.public.User.where({ email }).first();
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }

@@ -4,10 +4,24 @@ const mockPrisma = {
     update: jest.fn(),
   },
 };
+const mockPrisma8 = {
+  orm: {
+    public: {
+      User: {
+        where: jest.fn(),
+      },
+    },
+  },
+};
 
 jest.mock('../config/prisma', () => ({
   __esModule: true,
   default: mockPrisma,
+}));
+
+jest.mock('../config/prisma8', () => ({
+  __esModule: true,
+  default: mockPrisma8,
 }));
 
 import bcrypt from 'bcryptjs';
@@ -34,6 +48,9 @@ describe('First-login password change', () => {
       status: 'must_change_password',
     };
     mockPrisma.user.findUnique.mockResolvedValue(user);
+    mockPrisma8.orm.public.User.where.mockReturnValue({
+      first: jest.fn().mockResolvedValue(user),
+    });
     mockPrisma.user.update.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => ({
       ...user,
       ...data,
@@ -127,7 +144,9 @@ describe('First-login password change', () => {
       new Error('Could not connect to postgresql://db_user:secret@db.example.test/app'),
       { code: 'P1001' }
     );
-    mockPrisma.user.findUnique.mockRejectedValueOnce(databaseError);
+    mockPrisma8.orm.public.User.where.mockReturnValueOnce({
+      first: jest.fn().mockRejectedValueOnce(databaseError),
+    });
     const errorLog = jest.spyOn(logger, 'error');
 
     try {

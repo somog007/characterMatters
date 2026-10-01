@@ -39,6 +39,10 @@
     "prisma": "8.0.0-rc.18"
   },
   "overrides": {
-    "qs": "6.16.0"
+    "qs": "6.16.0",
+    "effect": "4.0.0-rc.115",
+    "@prisma/config": {
+      "effect": "3.20.0"
+    }
   }
 }

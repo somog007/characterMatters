@@ -6,9 +6,9 @@
   "scripts": {
     "start": "node dist/app.js",
     "dev": "nodemon",
-    "build": "prisma7 generate --config ../prisma7.config.ts && tsc",
+    "build": "prisma7 generate --schema prisma/schema.prisma && tsc",
     "test": "jest",
-    "prisma:generate": "prisma7 generate --config ../prisma7.config.ts",
+    "prisma:generate": "prisma7 generate --schema prisma/schema.prisma",
     "prisma:migrate": "prisma7 migrate dev --config ../prisma7.config.ts",
     "prisma:deploy": "prisma7 migrate deploy --config ../prisma7.config.ts"
   },

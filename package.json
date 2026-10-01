@@ -22,15 +22,14 @@
     "welcome"
   ],
   "dependencies": {
-    "@prisma/client": "5.22.0",
+    "@prisma/client": "7.10.0",
     "@sendgrid/client": "8.1.6",
     "@sendgrid/mail": "^8.1.6",
-    "qs": "6.16.0",
-    "prisma": "5.22.0"
+    "qs": "6.16.0"
   },
   "devDependencies": {
-    "@prisma/cli-engine": "^0.4.0",
-    "@types/node": "^20.5.0"
+    "@types/node": "^20.5.0",
+    "prisma": "7.10.0"
   },
   "overrides": {
     "qs": "6.16.0"

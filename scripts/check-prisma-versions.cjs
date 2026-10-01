@@ -23,14 +23,16 @@ const declaredVersions = packageDirectories.map(({ name, directory }) => {
   };
 });
 
+const expectedVersion = declaredVersions[0]?.cli;
 const mismatches = declaredVersions.filter(
-  ({ cli, client }) => !cli || !client || cli !== client
+  ({ cli, client }) =>
+    !cli || !client || !cli.startsWith('7.') || cli !== client || cli !== expectedVersion
 );
 
 if (mismatches.length > 0) {
   for (const { name, cli, client } of mismatches) {
     console.error(
-      `${name}: prisma (${cli ?? 'missing'}) and @prisma/client (${client ?? 'missing'}) must use the same version.`
+      `${name}: prisma (${cli ?? 'missing'}) and @prisma/client (${client ?? 'missing'}) must use the same Prisma 7 version.`
     );
   }
   process.exitCode = 1;

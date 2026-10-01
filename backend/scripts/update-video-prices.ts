@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import prisma from '../src/config/prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../src/generated/prisma/client';
 
 async function main() {
   console.log('🚀 Updating price for all video assets to ₦50,000...');

@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/prisma';
 import { initializePaystackTransaction, verifyPaystackTransaction } from '../utils/paystack';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../generated/prisma/client';
 import { logger } from '../middleware/logger';
 import { handleControllerError } from '../utils/handleControllerError';
 

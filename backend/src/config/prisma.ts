@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
-import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '../generated/prisma/client';
 
 dotenv.config();
 
@@ -12,11 +13,16 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 const runtimeDatabaseUrl = process.env.DATABASE_URL_POOLED || process.env.DATABASE_URL;
+if (!runtimeDatabaseUrl) {
+  throw new Error('DATABASE_URL or DATABASE_URL_POOLED must be configured');
+}
+
+const adapter = new PrismaPg({ connectionString: runtimeDatabaseUrl });
 
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    ...(runtimeDatabaseUrl ? { datasources: { db: { url: runtimeDatabaseUrl } } } : {}),
+    adapter,
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   });
 

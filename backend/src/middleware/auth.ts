@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import prisma from '../config/prisma';
-import type { User } from '@prisma/client';
+import type { User } from '../generated/prisma/client';
 import { ACCESS_COOKIE, CSRF_COOKIE } from '../utils/sessionCookies';
 
 export interface AuthRequest extends Request {

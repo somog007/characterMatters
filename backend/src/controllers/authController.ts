@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { AuthRequest, getJwtSecret } from '../middleware/auth';
 import prisma from '../config/prisma';
-import prisma8 from '../config/prisma8';
+import type prisma8Client from '../config/prisma8.js';
 import { handleControllerError } from '../utils/handleControllerError';
 import { clearSessionCookies, issueCsrfCookie, issueSessionCookies } from '../utils/sessionCookies';
 
@@ -46,6 +46,8 @@ export const register = async (req: AuthRequest, res: Response) => {
 
 export const login = async (req: AuthRequest, res: Response) => {
   try {
+    const { default: loadedPrisma8 } = await import('../config/prisma8.js');
+    const prisma8 = loadedPrisma8 as unknown as typeof prisma8Client;
     const { email, password } = req.body;
 
     const user = await prisma8.orm.public.User.where({ email }).first();

@@ -34,15 +34,17 @@
     "temporal-polyfill": "1.0.5"
   },
   "devDependencies": {
-    "@prisma/prisma7": "7.10.0",
     "@types/node": "^22.0.0",
     "prisma": "8.0.0-rc.18"
   },
   "overrides": {
     "qs": "6.16.0",
     "effect": "4.0.0-rc.115",
-    "@prisma/config": {
-      "effect": "3.20.0"
-    }
+    "@effect/platform-bun": "4.0.0-rc.115",
+    "@effect/platform-node": "4.0.0-rc.115",
+    "@effect/platform-node-shared": "4.0.0-rc.115",
+    "@effect/sql-d1": "4.0.0-rc.115",
+    "@effect/sql-sqlite-do": "4.0.0-rc.115",
+    "@effect/vitest": "4.0.0-rc.115"
   }
 }

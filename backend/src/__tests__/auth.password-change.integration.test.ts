@@ -1,18 +1,15 @@
 const mockPrisma = {
   user: {
+    findFirst: jest.fn(),
     findUnique: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
   },
-};
-const mockPrisma8 = {
-  orm: {
-    public: {
-      User: {
-        where: jest.fn(),
-      },
-    },
+  emailVerificationToken: {
+    create: jest.fn(),
+    deleteMany: jest.fn(),
   },
+  $transaction: jest.fn(),
 };
 
 jest.mock('../config/prisma', () => ({
@@ -20,14 +17,10 @@ jest.mock('../config/prisma', () => ({
   default: mockPrisma,
 }));
 
-jest.mock('../config/prisma8', () => ({
-  __esModule: true,
-  default: mockPrisma8,
-}));
-
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
 import app from '../app';
+import { env } from '../config/env';
 import { logger } from '../middleware/logger';
 import { AuthChangePasswordSchema, AuthRegisterSchema } from '../middleware/validation';
 
@@ -36,7 +29,7 @@ describe('First-login password change', () => {
   let user: Record<string, any>;
 
   beforeAll(() => {
-    process.env.JWT_SECRET = 'integration-test-secret-that-is-at-least-32-characters';
+    env.JWT_SECRET = 'integration-test-secret-that-is-at-least-32-characters';
   });
 
   beforeEach(async () => {
@@ -47,11 +40,13 @@ describe('First-login password change', () => {
       passwordHash: await bcrypt.hash(temporaryPassword, 4),
       role: 'USER',
       status: 'must_change_password',
+      emailVerified: true,
     };
     mockPrisma.user.findUnique.mockResolvedValue(user);
-    mockPrisma8.orm.public.User.where.mockReturnValue({
-      first: jest.fn().mockResolvedValue(user),
-    });
+    mockPrisma.user.findFirst.mockResolvedValue(user);
+    mockPrisma.$transaction.mockImplementation(async (operation: (client: typeof mockPrisma) => unknown) =>
+      operation(mockPrisma)
+    );
     mockPrisma.user.update.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => ({
       ...user,
       ...data,
@@ -76,8 +71,8 @@ describe('First-login password change', () => {
   });
 
   it('does not create an account when the JWT secret is missing', async () => {
-    const originalSecret = process.env.JWT_SECRET;
-    delete process.env.JWT_SECRET;
+    const originalSecret = env.JWT_SECRET;
+    delete env.JWT_SECRET;
 
     try {
       const response = await request(app)
@@ -85,17 +80,17 @@ describe('First-login password change', () => {
         .send({ name: 'New User', email: 'new@example.com', password: 'a-strong-password' });
 
       expect(response.status).toBe(500);
-      expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
+      expect(mockPrisma.user.findFirst).not.toHaveBeenCalled();
       expect(mockPrisma.user.create).not.toHaveBeenCalled();
     } finally {
-      if (originalSecret === undefined) delete process.env.JWT_SECRET;
-      else process.env.JWT_SECRET = originalSecret;
+      if (originalSecret === undefined) delete env.JWT_SECRET;
+      else env.JWT_SECRET = originalSecret;
     }
   });
 
   it('does not query the account when the JWT secret is missing during login', async () => {
-    const originalSecret = process.env.JWT_SECRET;
-    delete process.env.JWT_SECRET;
+    const originalSecret = env.JWT_SECRET;
+    delete env.JWT_SECRET;
 
     try {
       const response = await request(app)
@@ -103,10 +98,10 @@ describe('First-login password change', () => {
         .send({ email: user.email, password: temporaryPassword });
 
       expect(response.status).toBe(500);
-      expect(mockPrisma8.orm.public.User.where).not.toHaveBeenCalled();
+      expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
     } finally {
-      if (originalSecret === undefined) delete process.env.JWT_SECRET;
-      else process.env.JWT_SECRET = originalSecret;
+      if (originalSecret === undefined) delete env.JWT_SECRET;
+      else env.JWT_SECRET = originalSecret;
     }
   });
 
@@ -180,9 +175,7 @@ describe('First-login password change', () => {
       new Error('Could not connect to postgresql://db_user:secret@db.example.test/app'),
       { code: 'P1001' }
     );
-    mockPrisma8.orm.public.User.where.mockReturnValueOnce({
-      first: jest.fn().mockRejectedValueOnce(databaseError),
-    });
+    mockPrisma.user.findFirst.mockRejectedValueOnce(databaseError);
     const errorLog = jest.spyOn(logger, 'error');
 
     try {
@@ -192,9 +185,10 @@ describe('First-login password change', () => {
         .send({ email: user.email, password: temporaryPassword });
 
       expect(login.status).toBe(500);
-      expect(login.body).toEqual({ message: 'Internal server error' });
+      expect(login.body).toEqual({ message: 'Something went wrong, please try again' });
       expect(errorLog).toHaveBeenCalledWith(expect.objectContaining({
-        message: 'Login failed',
+        message: 'Authentication flow failed',
+        action: 'login',
         errorType: 'Error',
         errorCode: 'P1001',
         errorMessage: expect.stringContaining('[REDACTED_DATABASE_URL]'),

@@ -7,17 +7,26 @@ import { login, changePassword, clearError } from '@/store/authSlice';
 import AnimatedCard from '@/components/AnimatedCard';
 import PageTransition from '@/components/PageTransition';
 import Link from 'next/link';
+import { resendVerificationEmail } from '@/lib/api';
 
 export default function Login() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { isAuthenticated, mustChangePassword, loading, error } = useAppSelector((state) => state.auth);
+  const {
+    isAuthenticated,
+    mustChangePassword,
+    loading,
+    error,
+    emailVerificationRequired,
+  } = useAppSelector((state) => state.auth);
   
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [resendingVerification, setResendingVerification] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState('');
 
   useEffect(() => {
     if (isAuthenticated && !mustChangePassword) {
@@ -41,6 +50,19 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(login(formData));
+  };
+
+  const handleResendVerification = async () => {
+    setResendingVerification(true);
+    setVerificationMessage('');
+    try {
+      const result = await resendVerificationEmail(formData.email);
+      setVerificationMessage(result.message);
+    } catch {
+      setVerificationMessage('Unable to request a verification email right now. Please try again.');
+    } finally {
+      setResendingVerification(false);
+    }
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -72,6 +94,21 @@ export default function Login() {
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
               <p className="text-center">{error}</p>
             </div>
+          )}
+          {emailVerificationRequired && (
+            <div className="mb-6 text-center">
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendingVerification || !formData.email}
+                className="text-purple-700 font-bold disabled:opacity-50"
+              >
+                {resendingVerification ? 'Sending...' : 'Resend verification email'}
+              </button>
+            </div>
+          )}
+          {verificationMessage && (
+            <p className="mb-6 text-center text-green-800" role="status">{verificationMessage}</p>
           )}
 
           {mustChangePassword ? (

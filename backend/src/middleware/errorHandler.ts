@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from './logger';
+import { env } from '../config/env';
 
 export class AppError extends Error {
   public statusCode: number;
@@ -20,42 +21,27 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  let error = { ...err };
-  error.message = err.message;
-
-  if (process.env.NODE_ENV === 'production') {
-    logger.error({ message: 'Unhandled request error', errorType: err.name });
-  } else {
-    console.error(err);
-  }
-
-  // Mongoose bad ObjectId
-  if (err.name === 'CastError') {
-    const message = 'Resource not found';
-    error = new AppError(message, 404);
-  }
-
-  // Mongoose duplicate key
-  if ((err as any).code === 11000) {
-    const message = 'Duplicate field value entered';
-    error = new AppError(message, 400);
-  }
-
-  // Mongoose validation error
-  if (err.name === 'ValidationError') {
-    const messages = Object.values((err as any).errors).map((val: any) => val.message);
-    const message = messages.join(', ');
-    error = new AppError(message, 400);
-  }
-
-  const statusCode = (error as AppError).statusCode || 500;
-  const message = statusCode >= 500 && process.env.NODE_ENV === 'production'
-    ? 'Internal server error'
-    : error.message || 'Server Error';
-
+  const statusCode = err instanceof AppError ? err.statusCode : 500;
+  const errorMessage = err.message
+    .replace(/postgres(?:ql)?:\/\/[^\s"'<>]+/gi, '[REDACTED_DATABASE_URL]')
+    .replace(/\bSG\.[A-Za-z0-9_-]+\b/g, '[REDACTED_SENDGRID_API_KEY]')
+    .replace(/\bBearer\s+[A-Za-z0-9._~-]+\b/gi, 'Bearer [REDACTED_TOKEN]');
+  const stack = err.stack
+    ?.replace(err.message, errorMessage)
+    .replace(/\bSG\.[A-Za-z0-9_-]+\b/g, '[REDACTED_SENDGRID_API_KEY]')
+    .replace(/\bBearer\s+[A-Za-z0-9._~-]+\b/gi, 'Bearer [REDACTED_TOKEN]');
+  logger.error({
+    message: 'Unhandled request error',
+    errorType: err.name,
+    errorMessage,
+    ...(stack ? { stack } : {}),
+    method: req.method,
+    path: req.path,
+  });
   res.status(statusCode).json({
     success: false,
-    message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    message: statusCode >= 500
+      ? 'Something went wrong, please try again'
+      : err.message || 'Request failed',
   });
 };

@@ -7,6 +7,7 @@ import { register, clearError } from '@/store/authSlice';
 import AnimatedCard from '@/components/AnimatedCard';
 import PageTransition from '@/components/PageTransition';
 import Link from 'next/link';
+import { resendVerificationEmail } from '@/lib/api';
 
 export default function Register() {
   const router = useRouter();
@@ -21,6 +22,9 @@ export default function Register() {
   });
 
   const [localError, setLocalError] = useState('');
+  const [verificationPending, setVerificationPending] = useState(false);
+  const [resendingVerification, setResendingVerification] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState('');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -55,11 +59,32 @@ export default function Register() {
       return;
     }
 
-    dispatch(register({
+    const result = await dispatch(register({
       name: formData.name,
       email: formData.email,
       password: formData.password,
     }));
+    if (register.fulfilled.match(result)) {
+      setVerificationPending(true);
+      setVerificationMessage(
+        result.payload.verificationEmailQueued
+          ? 'Your account was created. Check your inbox for a verification link.'
+          : 'Your account was created, but we could not send the verification email. Try resending it.'
+      );
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResendingVerification(true);
+    setVerificationMessage('');
+    try {
+      const result = await resendVerificationEmail(formData.email);
+      setVerificationMessage(result.message);
+    } catch {
+      setVerificationMessage('Unable to request a verification email right now. Please try again.');
+    } finally {
+      setResendingVerification(false);
+    }
   };
 
   return (
@@ -79,7 +104,19 @@ export default function Register() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {verificationPending ? (
+            <div className="space-y-4 text-center">
+              <p className="text-green-800" role="status">{verificationMessage}</p>
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendingVerification}
+                className="text-blue-700 font-bold disabled:opacity-50"
+              >
+                {resendingVerification ? 'Sending...' : 'Resend verification email'}
+              </button>
+            </div>
+          ) : <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-gray-700 font-bold mb-2">
                 Full Name 👤
@@ -126,7 +163,7 @@ export default function Register() {
                 minLength={12}
                 maxLength={72}
                 className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
-                placeholder="At least 6 characters"
+                placeholder="At least 12 characters"
               />
             </div>
 
@@ -153,7 +190,10 @@ export default function Register() {
             >
               {loading ? 'Creating account...' : 'Create Account 🚀'}
             </button>
-          </form>
+          </form>}
+          {verificationMessage && !verificationPending && (
+            <p className="mt-4 text-center text-green-800" role="status">{verificationMessage}</p>
+          )}
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">

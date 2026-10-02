@@ -1,7 +1,5 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
 import bcrypt from 'bcryptjs';
+import { env } from '../src/config/env';
 import prisma from '../src/config/prisma';
 
 const WEAVERS_EMAIL = 'weaversprivateschool2023@gmail.com';
@@ -9,8 +7,8 @@ const ADMIN_EMAIL = 'charactermattersng@gmail.com';
 const CLOUDINARY_BRONZE_URL = 'https://collection.cloudinary.com/crau2l9a/fafda5942927feb6d904a3105bda1d79';
 
 async function main() {
-  const adminPassword = process.env.INITIAL_ADMIN_PASSWORD;
-  const weaversPassword = process.env.INITIAL_WEAVERS_PASSWORD;
+  const adminPassword = env.INITIAL_ADMIN_PASSWORD;
+  const weaversPassword = env.INITIAL_WEAVERS_PASSWORD;
   if (!adminPassword || !weaversPassword) {
     throw new Error('Set INITIAL_ADMIN_PASSWORD and INITIAL_WEAVERS_PASSWORD before running this script');
   }

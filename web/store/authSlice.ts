@@ -15,6 +15,7 @@ interface AuthState {
   mustChangePassword: boolean;
   loading: boolean;
   error: string | null;
+  emailVerificationRequired: boolean;
 }
 
 const initialState: AuthState = {
@@ -23,6 +24,7 @@ const initialState: AuthState = {
   mustChangePassword: false,
   loading: true,
   error: null,
+  emailVerificationRequired: false,
 };
 
 export const login = createAsyncThunk(
@@ -32,8 +34,11 @@ export const login = createAsyncThunk(
       const response = await api.post('/auth/login', credentials);
       return { ...response.data, user: { ...response.data.user, name: response.data.user.fullName } };
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return rejectWithValue(err.response?.data?.message || 'Login failed');
+      const err = error as { response?: { data?: { message?: string; code?: string } } };
+      return rejectWithValue({
+        message: err.response?.data?.message || 'Login failed',
+        code: err.response?.data?.code,
+      });
     }
   }
 );
@@ -59,7 +64,10 @@ export const register = createAsyncThunk(
   async (userData: { email: string; password: string; name: string }, { rejectWithValue }) => {
     try {
       const response = await api.post('/auth/register', userData);
-      return { ...response.data, user: { ...response.data.user, name: response.data.user.fullName } };
+      return response.data as {
+        emailVerificationRequired: boolean;
+        verificationEmailQueued?: boolean;
+      };
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       return rejectWithValue(err.response?.data?.message || 'Registration failed');
@@ -92,6 +100,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.mustChangePassword = false;
       state.error = null;
+      state.emailVerificationRequired = false;
     },
     clearError: (state) => {
       state.error = null;
@@ -103,16 +112,20 @@ const authSlice = createSlice({
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.emailVerificationRequired = false;
       })
       .addCase(login.fulfilled, (state, action: PayloadAction<{ user: User; mustChangePassword?: boolean }>) => {
         state.loading = false;
         state.isAuthenticated = true;
         state.mustChangePassword = Boolean(action.payload.mustChangePassword);
         state.user = action.payload.user;
+        state.emailVerificationRequired = false;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        const payload = action.payload as { message: string; code?: string } | undefined;
+        state.error = payload?.message || action.error.message || 'Login failed';
+        state.emailVerificationRequired = payload?.code === 'EMAIL_VERIFICATION_REQUIRED';
       })
       .addCase(changePassword.pending, (state) => {
         state.loading = true;
@@ -132,12 +145,14 @@ const authSlice = createSlice({
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.emailVerificationRequired = false;
       })
-      .addCase(register.fulfilled, (state, action: PayloadAction<{ user: User }>) => {
+      .addCase(register.fulfilled, (state) => {
         state.loading = false;
-        state.isAuthenticated = true;
+        state.isAuthenticated = false;
+        state.user = null;
         state.mustChangePassword = false;
-        state.user = action.payload.user;
+        state.emailVerificationRequired = true;
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;

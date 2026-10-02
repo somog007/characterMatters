@@ -1,6 +1,7 @@
 import request from 'supertest';
 import app from '../app';
 import prisma from '../config/prisma';
+import { env } from '../config/env';
 
 jest.mock('../config/prisma', () => ({
   __esModule: true,
@@ -37,10 +38,8 @@ describe('Health endpoints', () => {
 
 describe('Production CORS', () => {
   it('allows same-origin requests when FRONTEND_URL is not configured', async () => {
-    const previousNodeEnv = process.env.NODE_ENV;
-    const previousFrontendUrl = process.env.FRONTEND_URL;
-    process.env.NODE_ENV = 'production';
-    delete process.env.FRONTEND_URL;
+    const previousNodeEnv = env.NODE_ENV;
+    env.NODE_ENV = 'production';
 
     try {
       const res = await request(app)
@@ -50,15 +49,13 @@ describe('Production CORS', () => {
 
       expect(res.status).toBe(200);
     } finally {
-      process.env.NODE_ENV = previousNodeEnv;
-      if (previousFrontendUrl === undefined) delete process.env.FRONTEND_URL;
-      else process.env.FRONTEND_URL = previousFrontendUrl;
+      env.NODE_ENV = previousNodeEnv;
     }
   });
 
   it('does not allow localhost origins in production', async () => {
-    const previousNodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
+    const previousNodeEnv = env.NODE_ENV;
+    env.NODE_ENV = 'production';
 
     try {
       const res = await request(app)
@@ -66,7 +63,7 @@ describe('Production CORS', () => {
         .set('Origin', 'http://localhost:3000');
       expect(res.headers['access-control-allow-origin']).toBeUndefined();
     } finally {
-      process.env.NODE_ENV = previousNodeEnv;
+      env.NODE_ENV = previousNodeEnv;
     }
   });
 });

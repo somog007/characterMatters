@@ -1,13 +1,14 @@
 import crypto from 'crypto';
 import { Response } from 'express';
+import { isProduction } from '../config/env';
 
 export const ACCESS_COOKIE = 'cm_access';
 export const CSRF_COOKIE = 'cm_csrf';
 
 const cookieOptions = (httpOnly: boolean, maxAge: number) => ({
   httpOnly,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
+  secure: isProduction(),
+  sameSite: 'lax' as const,
   path: '/',
   maxAge,
 });

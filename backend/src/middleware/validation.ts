@@ -10,13 +10,21 @@ const passwordSchema = z
 
 export const AuthRegisterSchema = z.object({
   name: z.string().trim().min(2).max(120),
-  email: z.string().trim().email(),
+  email: z.string().trim().email().transform((email) => email.toLowerCase()),
   password: passwordSchema,
 });
 
 export const AuthLoginSchema = z.object({
-  email: z.string().trim().email(),
+  email: z.string().trim().email().transform((email) => email.toLowerCase()),
   password: z.string().min(6).max(128),
+});
+
+export const AuthResendVerificationSchema = z.object({
+  email: z.string().trim().email().transform((email) => email.toLowerCase()),
+});
+
+export const AuthVerifyEmailSchema = z.object({
+  token: z.string().min(32).max(256),
 });
 
 export const AuthChangePasswordSchema = z.object({

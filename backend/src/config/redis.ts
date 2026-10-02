@@ -1,25 +1,13 @@
 // Redis In-Memory Caching & Session Store Configuration
-import dotenv from 'dotenv';
-dotenv.config();
+import { env } from './env';
 
-let RedisClientClass: any;
-try {
-  RedisClientClass = require('ioredis');
-} catch {
-  // In-memory fallback map if ioredis is not yet installed in node_modules
-  RedisClientClass = class MockRedis {
-    private cache = new Map<string, string>();
-    async get(key: string) { return this.cache.get(key) || null; }
-    async set(key: string, val: string) { this.cache.set(key, val); return 'OK'; }
-    async setex(key: string, seconds: number, val: string) { this.cache.set(key, val); return 'OK'; }
-    async del(key: string) { this.cache.delete(key); return 1; }
-    on() { return this; }
-  };
+if (!env.REDIS_URL) {
+ throw new Error('REDIS_URL must be configured before the Redis cache is used');
 }
 
-const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+const RedisClientClass = require('ioredis');
 
-export const redis = new RedisClientClass(redisUrl, {
+export const redis = new RedisClientClass(env.REDIS_URL, {
   lazyConnect: true,
   maxRetriesPerRequest: 3,
 });

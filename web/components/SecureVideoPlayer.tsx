@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { DynamicWatermark } from './DynamicWatermark';
-import { getCsrfToken } from '@/lib/api';
+import { API_BASE_URL, getCsrfToken } from '@/lib/api';
 
 interface VideoPlayerProps {
   videoId: string;
@@ -11,8 +11,7 @@ interface VideoPlayerProps {
 
 export const SecureVideoPlayer: React.FC<VideoPlayerProps> = ({
   videoId,
-  backendUrl = process.env.NEXT_PUBLIC_API_URL ||
-    (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api'),
+  backendUrl = API_BASE_URL,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);

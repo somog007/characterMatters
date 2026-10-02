@@ -4,7 +4,6 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
 import * as Sentry from '@sentry/node';
 import { errorHandler } from './middleware/errorHandler';
 import { csrfProtection } from './middleware/auth';
@@ -18,35 +17,25 @@ import subscriptionRoutes from './routes/subscriptions';
 import galleryRoutes from './routes/gallery';
 import adminRoutes from './routes/admin';
 import playbackRoutes from './routes/playbackRoutes';
-
-dotenv.config();
-
-if (process.env.DATABASE_URL && !process.env.DIRECT_URL) {
-  process.env.DIRECT_URL = process.env.DATABASE_URL;
-}
+import { env, isProduction } from './config/env';
 
 // Initialize Sentry
 Sentry.init({
-  dsn: process.env.SENTRY_DSN,
+  dsn: env.SENTRY_DSN,
   tracesSampleRate: 1.0,
 });
 
-// Validate required environment variables early (non-fatal warnings so dev can start)
-const requiredEnv = ['JWT_SECRET', 'DATABASE_URL'];
-requiredEnv.forEach((key) => {
-  if (!process.env[key]) {
-    logger.warn({ message: `Missing expected env var ${key}`, key });
-  }
-});
-
 const app = express();
-if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32)) {
-  throw new Error('JWT_SECRET must be configured with at least 32 characters in production');
-}
-
-if (process.env.NODE_ENV === 'production') {
+if (isProduction()) {
   app.set('trust proxy', 1);
 }
+
+const productionSiteOrigin = new URL(env.SITE_URL);
+const alternateSiteOrigin = new URL(env.SITE_URL);
+alternateSiteOrigin.hostname = alternateSiteOrigin.hostname.startsWith('www.')
+  ? alternateSiteOrigin.hostname.slice(4)
+  : `www.${alternateSiteOrigin.hostname}`;
+const productionAllowedOrigins = [productionSiteOrigin.origin, alternateSiteOrigin.origin];
 
 // Handle Netlify function path prefix rewrite if invoked via /.netlify/functions/api
 app.use((req, _res, next) => {
@@ -80,6 +69,20 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
   message: { message: 'Too many login attempts. Try again later.' },
 });
+const signupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many signup attempts. Try again later.' },
+});
+const verificationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many verification requests. Try again later.' },
+});
 
 // Body parsing middleware
 app.use(express.json({
@@ -96,12 +99,13 @@ app.use(compression());
 // CORS
 const corsOptions: cors.CorsOptions = {
     origin: (origin, callback) => {
-      const allowedOrigins = [
-        process.env.FRONTEND_URL,
-        ...(process.env.NODE_ENV === 'production'
-          ? []
-          : ['http://localhost:3000', 'http://localhost:3001']),
-      ].filter(Boolean) as string[];
+      const allowedOrigins = isProduction()
+        ? productionAllowedOrigins
+        : [
+            new URL(env.SITE_URL).origin,
+            'http://localhost:3000',
+            'http://localhost:3001',
+          ];
       // Allow requests with no origin like curl/postman or same-origin
       if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
       return callback(new Error('Not allowed by CORS'));
@@ -156,12 +160,16 @@ app.get('/api/health', async (_req, res) => {
     status: healthy ? 'ok' : 'error',
     uptime: process.uptime(),
     database: dbStatus,
+    configuration: 'valid',
+    localhostUrls: false,
     timestamp: new Date().toISOString(),
   });
 });
 
 // API routes
 app.use('/api/auth/login', loginLimiter);
+app.use('/api/auth/register', signupLimiter);
+app.use('/api/auth/resend-verification', verificationLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/videos', videoRoutes);
@@ -188,7 +196,7 @@ const startServer = async () => {
     return;
   }
 
-  const PORT = process.env.PORT || 5000;
+  const PORT = env.PORT || 5000;
   const server = app.listen(PORT, () => {
     logger.info({ message: 'Server running', port: PORT });
   });
@@ -221,12 +229,12 @@ const startServer = async () => {
 };
 
 const isServerless = Boolean(
-  process.env.NETLIFY ||
-  process.env.AWS_LAMBDA_FUNCTION_NAME ||
-  process.env.SERVERLESS ||
-  process.env.VERCEL
+  env.NETLIFY ||
+  env.AWS_LAMBDA_FUNCTION_NAME ||
+  env.SERVERLESS ||
+  env.VERCEL
 );
 
-if (process.env.NODE_ENV !== 'test' && !isServerless) {
+if (env.NODE_ENV !== 'test' && !isServerless) {
   startServer();
 }

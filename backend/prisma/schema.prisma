@@ -9,6 +9,7 @@ generator client {
   provider     = "prisma-client"
   output       = "../src/generated/prisma"
   moduleFormat = "cjs"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 enum Role {
@@ -62,6 +63,7 @@ model User {
   email                String            @unique
   passwordHash         String
   fullName             String
+  emailVerified        Boolean           @default(true)
   role                 Role              @default(USER)
   status               String            @default("active")
   schoolName           String?
@@ -78,8 +80,21 @@ model User {
   securityLogs         SecurityLog[]
   deviceSessions       DeviceSession[]
   playbackSessions     PlaybackSession[]
+  emailVerificationTokens EmailVerificationToken[]
 
   @@map("users")
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_verification_tokens")
 }
 
 model Subscription {
@@ -277,4 +292,3 @@ model SecurityLog {
 
   @@map("security_logs")
 }
-

@@ -2,6 +2,7 @@ import { Response } from 'express';
 import crypto from 'crypto';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/prisma';
+import { env } from '../config/env';
 
 export const getHLSKey = async (req: AuthRequest, res: Response) => {
   try {
@@ -35,7 +36,7 @@ export const getHLSKey = async (req: AuthRequest, res: Response) => {
     }
 
     // Retrieve master AES-128 key securely from environment KMS or secret
-    const masterKeyHex = process.env.HLS_AES_128_MASTER_KEY;
+    const masterKeyHex = env.HLS_AES_128_MASTER_KEY;
     if (!masterKeyHex || !/^[a-f\d]{32}$/i.test(masterKeyHex)) {
       return res.status(503).json({ message: 'Video key service is not configured' });
     }

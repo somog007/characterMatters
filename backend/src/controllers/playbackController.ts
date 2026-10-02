@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/prisma';
 import { handleControllerError } from '../utils/handleControllerError';
+import { env } from '../config/env';
 
 export const createPlaybackSession = async (req: AuthRequest, res: Response) => {
   try {
@@ -54,7 +55,7 @@ export const createPlaybackSession = async (req: AuthRequest, res: Response) => 
     const lesson = await prisma.lesson.findUnique({ where: { id: videoId } });
     if (!lesson) return res.status(404).json({ message: 'Video not found' });
 
-    const signingSecret = process.env.CDN_SIGNING_SECRET;
+    const signingSecret = env.CDN_SIGNING_SECRET;
     if (!signingSecret || signingSecret.length < 32) {
       return res.status(503).json({ message: 'Video delivery signing is not configured' });
     }

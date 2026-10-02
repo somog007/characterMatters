@@ -1,3 +1,5 @@
+import { env } from '../config/env';
+
 const PAYSTACK_BASE_URL = 'https://api.paystack.co';
 
 interface InitializeTransactionOptions {
@@ -16,7 +18,7 @@ interface PaystackResponse<T> {
 }
 
 const getSecret = () => {
-  const secret = process.env.PAYSTACK_SECRET_KEY;
+  const secret = env.PAYSTACK_SECRET_KEY;
   if (!secret) {
     throw new Error('PAYSTACK_SECRET_KEY is not configured');
   }

@@ -6,6 +6,7 @@ import { initializePaystackTransaction, verifyPaystackTransaction } from '../uti
 import { Prisma } from '../generated/prisma/client';
 import { logger } from '../middleware/logger';
 import { handleControllerError } from '../utils/handleControllerError';
+import { env, isProduction } from '../config/env';
 
 const PACKAGE_PRICES_NGN: Record<string, number> = {
   package_1: 1_200_000,
@@ -39,10 +40,10 @@ export const startPaystackCheckout = async (req: AuthRequest, res: Response) => 
     }
 
     const reference = `ps_${crypto.randomUUID()}`;
-    const callbackBase = process.env.PAYSTACK_CALLBACK_URL ||
-      `${process.env.FRONTEND_URL || 'http://localhost:3000'}/subscribe`;
+    const callbackBase = env.PAYSTACK_CALLBACK_URL ||
+      `${env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')}/subscribe`;
     const callback = new URL(callbackBase);
-    if (process.env.NODE_ENV === 'production' && callback.protocol !== 'https:') {
+    if (isProduction() && callback.protocol !== 'https:') {
       return res.status(500).json({ message: 'Payment callback must use HTTPS in production' });
     }
     const resolvedCallback = callback.toString();
@@ -215,7 +216,7 @@ export const getSubscription = async (req: AuthRequest, res: Response) => {
 
 export const handlePaystackWebhook = async (req: Request, res: Response) => {
   try {
-    const secret = process.env.PAYSTACK_SECRET_KEY;
+    const secret = env.PAYSTACK_SECRET_KEY;
     if (!secret) {
       logger.error({ message: 'PAYSTACK_SECRET_KEY is missing during webhook verification' });
       return res.status(500).send('Webhook configuration error');
@@ -320,4 +321,3 @@ export const handlePaystackWebhook = async (req: Request, res: Response) => {
     if (!res.headersSent) return res.status(500).send('Webhook processing failed');
   }
 };
-

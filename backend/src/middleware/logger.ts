@@ -1,5 +1,6 @@
 import winston from 'winston';
 import { Request, Response, NextFunction } from 'express';
+import { env } from '../config/env';
 
 // Create logger
 export const logger = winston.createLogger({
@@ -10,7 +11,7 @@ export const logger = winston.createLogger({
     winston.format.json()
   ),
   defaultMeta: { service: 'video-ebook-platform' },
-  transports: process.env.NODE_ENV === 'production'
+  transports: env.NODE_ENV === 'production'
     ? [new winston.transports.Console()]
     : [
         new winston.transports.File({ filename: 'error.log', level: 'error' }),

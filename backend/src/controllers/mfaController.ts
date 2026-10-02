@@ -2,12 +2,13 @@ import { Response } from 'express';
 import crypto from 'crypto';
 import { AuthRequest } from '../middleware/auth';
 import { handleControllerError } from '../utils/handleControllerError';
+import { isProduction } from '../config/env';
 
 const mfaStore = new Map<string, { code: string; expiresAt: number }>();
 
 export const requestMfaCode = async (req: AuthRequest, res: Response) => {
   try {
-    if (process.env.NODE_ENV === 'production') {
+    if (isProduction()) {
       return res.status(503).json({ message: 'MFA is not available' });
     }
     if (!req.user) {
@@ -29,7 +30,7 @@ export const requestMfaCode = async (req: AuthRequest, res: Response) => {
 
 export const verifyMfaCode = async (req: AuthRequest, res: Response) => {
   try {
-    if (process.env.NODE_ENV === 'production') {
+    if (isProduction()) {
       return res.status(503).json({ message: 'MFA is not available' });
     }
     if (!req.user) {

@@ -40,7 +40,7 @@ export const handler = async (event: BackgroundEvent, _context: BackgroundContex
     }
 
     await sendVerificationEmail(claims.email, claims.name, claims.verificationUrl);
-    // logger.info({ message: 'Verification email sent', step: 'sendgrid_delivery' });
+    logger.info({ message: 'Verification email sent', step: 'sendgrid_delivery' });
     return { statusCode: 200, body: 'Email sent' };
   } catch (error) {
     const errorMessage = error instanceof Error

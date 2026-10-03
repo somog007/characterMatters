@@ -44,3 +44,5 @@
   NODE_VERSION = "22"
   NPM_FLAGS = "--include=dev"
   NEXT_TELEMETRY_DISABLED = "1"
+  # Turbopack cache can snapshot unrelated build-time provider credentials; it is not deploy output.
+  SECRETS_SCAN_OMIT_PATHS = ".netlify/.next/cache/**"

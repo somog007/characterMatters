@@ -33,6 +33,7 @@ This auth deployment intentionally requires the same-origin `/api` path and uses
 - `PAYSTACK_PUBLIC_KEY` is not required by the current backend checkout flow. The frontend does not read `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`.
 - `PORT` defaults to 5000 locally; Render supplies the service port.
 - Production secrets belong in the hosting provider's environment settings, not committed files. Rotate any credential that has been exposed.
+- Netlify's secret scan omits only `.netlify/.next/cache/**`, where Turbopack can snapshot build-time environment values; this cache is not deployed output. Do not broaden the omission to Functions or published assets. The application uses SendGrid directly through its HTTP API, independently of the optional Netlify Emails plugin.
 
 ## Post-Deployment Checks
 1. Confirm `/api/health` returns HTTP 200 and reports `database: connected`, `configuration: valid`, and `localhostUrls: false`.

@@ -1,7 +1,7 @@
 # Production Deployment Guide
 
 ## Architecture
-The Next.js App Router serves the pages. Express handles the API and authentication routes; `web/functions/api.ts` wraps `backend/src/app.ts` with `serverless-http`, and Netlify rewrites `/api/*` to that function. Do not add duplicate Next.js auth route handlers. The repository also includes a standalone Render alternative, but production must use one API path consistently.
+The Next.js App Router serves the pages. Express handles the API and authentication routes; `web/functions/api.ts` wraps `backend/src/app.ts` with `serverless-http`, and Netlify rewrites `/api/*` to that function. Do not add duplicate Next.js auth route handlers. Netlify is the only hosting target; the API is not deployed anywhere else.
 
 ## Netlify Frontend
 1. Connect the repository to Netlify; `netlify.toml` configures the Next.js plugin and build.
@@ -23,7 +23,7 @@ The Next.js App Router serves the pages. Express handles the API and authenticat
 Signup creates the user and email-verification token in one Prisma transaction. Verification email delivery is handed to a Netlify Background Function so a SendGrid failure does not roll back signup or hold the response. Existing accounts are migrated as verified; new accounts must verify before login. The Netlify build already runs Prisma generation through the backend build.
 
 ## Hosting boundary
-This auth deployment intentionally requires the same-origin `/api` path and uses a Netlify Background Function for verification email delivery. Do not point `NEXT_PUBLIC_API_URL` directly at a Render or other separate API host: that would bypass the same-origin cookie/CORS assumptions and leave email dispatch tied to Netlify. Moving the API off Netlify requires a coordinated cookie, CORS, and email-queue design change.
+This auth deployment intentionally requires the same-origin `/api` path and uses a Netlify Background Function for verification email delivery. Do not point `NEXT_PUBLIC_API_URL` directly at a separate API host: that would bypass the same-origin cookie/CORS assumptions and leave email dispatch tied to Netlify. Moving the API off Netlify requires a coordinated cookie, CORS, and email-queue design change.
 
 ## Environment Variable Notes
 - `DIRECT_URL` should be the database provider's direct, non-pooled connection string for Prisma migrations. Netlify Functions prefer `DATABASE_URL_POOLED` for runtime queries and fall back to `DATABASE_URL` when it is unset.
@@ -31,7 +31,7 @@ This auth deployment intentionally requires the same-origin `/api` path and uses
 - `HLS_AES_128_MASTER_KEY` must be 32 hexadecimal characters (16 bytes) and match the key used to encrypt the HLS media.
 - `CDN_SIGNING_SECRET` must be at least 32 characters.
 - `PAYSTACK_PUBLIC_KEY` is not required by the current backend checkout flow. The frontend does not read `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`.
-- `PORT` defaults to 5000 locally; Render supplies the service port.
+- `PORT` is only used by the local Express server (`npm run dev:backend`) and defaults to 5000; Netlify Functions ignore it.
 - Production secrets belong in the hosting provider's environment settings, not committed files. Rotate any credential that has been exposed.
 - Netlify's secret scan omits only `.netlify/.next/cache/**`, where Turbopack can snapshot build-time environment values; this cache is not deployed output. Do not broaden the omission to Functions or published assets. The application uses SendGrid directly through its HTTP API, independently of the optional Netlify Emails plugin.
 

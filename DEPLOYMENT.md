@@ -50,6 +50,22 @@ If SendGrid Domain Authentication is not set up, create it in [SendGrid > Settin
 
 For external DNS, Netlify's current recommended apex target is an ALIAS/ANAME/flattened CNAME to `apex-loadbalancer.netlify.com`; the fallback is an A record to `75.2.60.5`. For `www`, use the site-specific CNAME target shown in Netlify's domain panel. Your live DNS is already delegated to Netlify DNS and serving successfully, so verify rather than replace its active records. See [Netlify external DNS setup](https://docs.netlify.com/manage/domains/configure-domains/configure-external-dns/).
 
+### Baseline migration (one-time)
+`20260101000000_init` creates the base schema (all tables except the email-verification additions); `20261002000000_add_email_verification` then adds `users.emailVerified` and `email_verification_tokens`. Before this baseline existed, `migrate deploy` could not build the schema on an empty database. Pick the case that matches the production database (check with `npx prisma7 migrate status --config prisma7.config.ts`, or list tables in the database console):
+
+1. **Empty database (no `users` table):** run `npm --prefix backend run prisma:deploy`. Both migrations apply.
+2. **Tables exist (created earlier with `db push`) but there is no `_prisma_migrations` history:** mark the baseline as already applied, then deploy so only the email-verification migration runs:
+   ```powershell
+   npx prisma7 migrate resolve --applied 20260101000000_init --config prisma7.config.ts
+   npm --prefix backend run prisma:deploy
+   ```
+   If `users.emailVerified` and `email_verification_tokens` already exist too, also resolve `20261002000000_add_email_verification` as applied instead of deploying it.
+3. **`_prisma_migrations` already lists `20261002000000_add_email_verification`:** resolve the baseline as applied (case 2, first command only).
+
+Set `DIRECT_URL` (or `DATABASE_URL`) in your shell to the production direct connection string before running these; `prisma7.config.ts` reads it. After deploying, `POST /api/auth/login` with an unknown email must return 400 "Invalid credentials", not 500.
+
+The root `package.json` overrides `effect` to v4 for the Prisma 8 tooling; it pins `@prisma/config@7.10.0` back to `effect@3.20.0` because the Prisma 7 CLI cannot load `prisma7.config.ts` otherwise. Keep that nested override while both Prisma versions are installed.
+
 For Prisma, inspect the migration SQL and check the target/staging database first. Then run from the repository root:
 
 ```powershell

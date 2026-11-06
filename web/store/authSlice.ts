@@ -6,8 +6,12 @@ interface User {
   email: string;
   name: string;
   role: string;
+  schoolName?: string | null;
   avatar?: string;
+  subscription?: { status: string; plan: string } | null;
 }
+
+export type AccountType = 'PARENT' | 'SCHOOL';
 
 interface AuthState {
   user: User | null;
@@ -61,7 +65,16 @@ export const changePassword = createAsyncThunk(
 
 export const register = createAsyncThunk(
   'auth/register',
-  async (userData: { email: string; password: string; name: string }, { rejectWithValue }) => {
+  async (
+    userData: {
+      email: string;
+      password: string;
+      name: string;
+      accountType: AccountType;
+      schoolName?: string;
+    },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await api.post('/auth/register', userData);
       return response.data as {

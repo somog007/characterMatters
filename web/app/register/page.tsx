@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { register, clearError } from '@/store/authSlice';
+import { register, clearError, type AccountType } from '@/store/authSlice';
 import AnimatedCard from '@/components/AnimatedCard';
 import PageTransition from '@/components/PageTransition';
 import Link from 'next/link';
@@ -15,6 +15,8 @@ export default function Register() {
   const { isAuthenticated, loading, error } = useAppSelector((state) => state.auth);
   
   const [formData, setFormData] = useState({
+    accountType: 'PARENT' as AccountType,
+    schoolName: '',
     name: '',
     email: '',
     password: '',
@@ -59,10 +61,18 @@ export default function Register() {
       return;
     }
 
+    const isSchool = formData.accountType === 'SCHOOL';
+    if (isSchool && formData.schoolName.trim().length < 2) {
+      setLocalError('Please enter the name of your school');
+      return;
+    }
+
     const result = await dispatch(register({
       name: formData.name,
       email: formData.email,
       password: formData.password,
+      accountType: formData.accountType,
+      ...(isSchool ? { schoolName: formData.schoolName.trim() } : {}),
     }));
     if (register.fulfilled.match(result)) {
       setVerificationPending(true);
@@ -117,9 +127,58 @@ export default function Register() {
               </button>
             </div>
           ) : <form onSubmit={handleSubmit} className="space-y-6">
+            <fieldset>
+              <legend className="block text-gray-700 font-bold mb-2">I am registering as</legend>
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  { value: 'PARENT', label: 'Parent 👨‍👩‍👧' },
+                  { value: 'SCHOOL', label: 'School 🏫' },
+                ] as const).map((option) => (
+                  <label
+                    key={option.value}
+                    className={`cursor-pointer rounded-lg border-2 px-4 py-3 text-center font-bold transition-colors ${
+                      formData.accountType === option.value
+                        ? 'border-blue-500 bg-blue-100 text-blue-800'
+                        : 'border-blue-200 bg-white text-gray-700'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="accountType"
+                      value={option.value}
+                      checked={formData.accountType === option.value}
+                      onChange={handleChange}
+                      className="sr-only"
+                    />
+                    {option.label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            {formData.accountType === 'SCHOOL' && (
+              <div>
+                <label htmlFor="schoolName" className="block text-gray-700 font-bold mb-2">
+                  School Name 🏫
+                </label>
+                <input
+                  type="text"
+                  id="schoolName"
+                  name="schoolName"
+                  value={formData.schoolName}
+                  onChange={handleChange}
+                  required
+                  minLength={2}
+                  maxLength={160}
+                  className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                  placeholder="Name of your school"
+                />
+              </div>
+            )}
+
             <div>
               <label htmlFor="name" className="block text-gray-700 font-bold mb-2">
-                Full Name 👤
+                {formData.accountType === 'SCHOOL' ? 'Contact Person Full Name 👤' : 'Full Name 👤'}
               </label>
               <input
                 type="text"

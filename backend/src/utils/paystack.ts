@@ -41,11 +41,22 @@ export class PaystackRequestError extends Error {
 }
 
 const getSecret = () => {
-  const secret = env.PAYSTACK_SECRET_KEY;
+  // Tolerate the usual copy-paste slips: surrounding spaces, quotes or a "Bearer " prefix.
+  const secret = env.PAYSTACK_SECRET_KEY?.trim().replace(/^["']|["']$/g, '').replace(/^Bearer\s+/i, '').trim();
   if (!secret) {
     throw new Error('PAYSTACK_SECRET_KEY is not configured');
   }
   return secret;
+};
+
+/** Safe-to-log facts about the configured key (never the key itself). */
+export const paystackKeyDiagnostics = () => {
+  const secret = env.PAYSTACK_SECRET_KEY?.trim().replace(/^["']|["']$/g, '').replace(/^Bearer\s+/i, '').trim() ?? '';
+  return {
+    keyMode: secret.startsWith('sk_live_') ? 'live' : secret.startsWith('sk_test_') ? 'test' : 'not-a-secret-key',
+    keyLooksPublic: secret.startsWith('pk_'),
+    keyLength: secret.length,
+  };
 };
 
 const paystackRequest = async <T>(path: string, init: RequestInit = {}): Promise<T> => {

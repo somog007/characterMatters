@@ -4,6 +4,7 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/prisma';
 import {
   PaystackRequestError,
+  paystackKeyDiagnostics,
   initializePaystackTransaction,
   verifyPaystackTransaction,
   type PaystackVerification,
@@ -27,7 +28,13 @@ const paystackErrorResponse = (res: Response, context: string, error: unknown) =
     });
   }
   if (error instanceof PaystackRequestError) {
-    logger.error({ message: context, paystackStatus: error.status, paystackMessage: error.message });
+    // Paystack's own reason (e.g. "Invalid key") is logged for the site owner, not shown to visitors.
+    logger.error({
+      message: context,
+      paystackStatus: error.status,
+      paystackMessage: error.message,
+      ...paystackKeyDiagnostics(),
+    });
     return res.status(502).json({
       message: 'The payment provider could not process this request. Please try again later or contact us.',
     });

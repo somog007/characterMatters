@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/prisma';
 import { env } from '../config/env';
+import { getClientIp } from '../utils/clientIp';
 
 export const getHLSKey = async (req: AuthRequest, res: Response) => {
   try {
@@ -25,7 +26,7 @@ export const getHLSKey = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ message: 'Invalid or revoked playback session key request' });
     }
 
-    const currentIp = req.ip || req.socket.remoteAddress || '0.0.0.0';
+    const currentIp = getClientIp(req);
     // IP verification to prevent session sharing
     if (session.ipAddress !== currentIp && session.ipAddress !== '0.0.0.0') {
       await prisma.playbackSession.update({

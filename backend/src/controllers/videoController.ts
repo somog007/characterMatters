@@ -10,9 +10,12 @@ export const getAllVideos = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
     const { ageGroup, accessTier } = req.query;
 
+    // Only plain values from the known sets; nested query objects are ignored.
     const where: any = { isPublished: true };
-    if (ageGroup) where.ageGroup = ageGroup;
-    if (accessTier) where.accessTier = accessTier;
+    if (typeof ageGroup === 'string' && ['TODDLER', 'PRE_K', 'SCHOOL_AGE'].includes(ageGroup)) where.ageGroup = ageGroup;
+    if (typeof accessTier === 'string' && ['BRONZE', 'SILVER', 'GOLD', 'SAPPHIRE', 'DIAMOND', 'PLATINUM'].includes(accessTier)) {
+      where.accessTier = accessTier;
+    }
 
     const [videos, total] = await Promise.all([
       prisma.lesson.findMany({

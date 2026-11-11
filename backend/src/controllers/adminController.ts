@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/prisma';
 import { handleControllerError } from '../utils/handleControllerError';
+import { PACKAGE_PRICES_NGN, type PlanId } from '../config/plans';
 
 export const getAdminMetrics = async (req: AuthRequest, res: Response) => {
   try {
@@ -96,12 +97,11 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
 
 export const assignUserSubscription = async (req: AuthRequest, res: Response) => {
   try {
-    const { email, planId = 'package_6', billingCycle = 'ACADEMIC_SESSION' } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: 'email is required' });
-    }
+    const { email, planId } = req.body as { email: string; planId: PlanId };
+    const billingCycle = 'ACADEMIC_SESSION' as const;
+    const priceAmountNgn = PACKAGE_PRICES_NGN[planId];
 
-    let user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } });
     if (!user) {
       return res.status(404).json({ message: 'User not found with specified email' });
     }
@@ -115,8 +115,8 @@ export const assignUserSubscription = async (req: AuthRequest, res: Response) =>
       update: {
         plan: planId,
         status: 'ACTIVE',
-        billingCycle: billingCycle as any,
-        priceAmountNgn: 150000,
+        billingCycle,
+        priceAmountNgn,
         startDate: now,
         currentPeriodStart: now,
         currentPeriodEnd: nextYear,
@@ -127,8 +127,8 @@ export const assignUserSubscription = async (req: AuthRequest, res: Response) =>
         userId: user.id,
         plan: planId,
         status: 'ACTIVE',
-        billingCycle: billingCycle as any,
-        priceAmountNgn: 150000,
+        billingCycle,
+        priceAmountNgn,
         startDate: now,
         currentPeriodStart: now,
         currentPeriodEnd: nextYear,

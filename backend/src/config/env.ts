@@ -33,6 +33,7 @@ const environmentSchema = z.object({
   PAYSTACK_SECRET_KEY: z.string().optional(),
   PAYSTACK_PUBLIC_KEY: z.string().optional(),
   PAYSTACK_CALLBACK_URL: z.string().url().optional(),
+  SUBSCRIBER_COLLECTION_URL: z.string().url().refine((value) => value.startsWith('https://'), 'Must use HTTPS').optional(),
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),

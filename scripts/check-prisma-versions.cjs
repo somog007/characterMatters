@@ -1,42 +1,34 @@
 const { readFileSync } = require('node:fs');
 const path = require('node:path');
 
+// Root and backend must declare the same Prisma 7 versions, or the generated
+// client and the CLI that runs migrations can drift apart.
 const rootDirectory = path.resolve(__dirname, '..');
 const packageDirectories = [
-  { name: 'root', directory: rootDirectory },
-  { name: 'backend', directory: path.join(rootDirectory, 'backend') },
+  { name: 'root', directory: rootDirectory, packages: ['@prisma/prisma7', '@prisma/client'] },
+  {
+    name: 'backend',
+    directory: path.join(rootDirectory, 'backend'),
+    packages: ['@prisma/prisma7', '@prisma/client', '@prisma/adapter-pg'],
+  },
 ];
 
-const declaredVersions = packageDirectories.map(({ name, directory }) => {
-  const packageJson = JSON.parse(
-    readFileSync(path.join(directory, 'package.json'), 'utf8')
-  );
-  const dependencies = {
-    ...packageJson.devDependencies,
-    ...packageJson.dependencies,
-  };
+const expectedVersion = '7.10.1';
+const mismatches = [];
 
-  return { name, dependencies };
-});
-
-const expected = {
-  prisma: '8.0.0-rc.18',
-  '@prisma/prisma7': '7.10.0',
-  '@prisma/client': '7.10.0',
-  '@prisma/orm-postgres': '8.0.0-rc.12',
-};
-const mismatches = declaredVersions.filter(({ dependencies }) =>
-  Object.entries(expected).some(([packageName, version]) => dependencies[packageName] !== version)
-);
+for (const { name, directory, packages } of packageDirectories) {
+  const packageJson = JSON.parse(readFileSync(path.join(directory, 'package.json'), 'utf8'));
+  const dependencies = { ...packageJson.devDependencies, ...packageJson.dependencies };
+  for (const packageName of packages) {
+    if (dependencies[packageName] !== expectedVersion) {
+      mismatches.push(`${name}: ${packageName}=${dependencies[packageName] ?? 'missing'} (expected ${expectedVersion})`);
+    }
+  }
+}
 
 if (mismatches.length > 0) {
-  for (const { name, dependencies } of mismatches) {
-    const actual = Object.keys(expected)
-      .map((packageName) => `${packageName}=${dependencies[packageName] ?? 'missing'}`)
-      .join(', ');
-    console.error(`${name}: expected ${Object.entries(expected).map(([key, value]) => `${key}=${value}`).join(', ')}; got ${actual}.`);
-  }
+  for (const mismatch of mismatches) console.error(mismatch);
   process.exitCode = 1;
 } else {
-  console.log('Root and backend Prisma 7/8 package versions match the migration lock.');
+  console.log(`Root and backend Prisma packages are all ${expectedVersion}.`);
 }

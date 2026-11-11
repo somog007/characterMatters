@@ -9,6 +9,12 @@ import { logger } from '../middleware/logger';
 import { enqueueVerificationEmail } from '../utils/email';
 import { handleControllerError } from '../utils/handleControllerError';
 import { clearSessionCookies, issueCsrfCookie, issueSessionCookies } from '../utils/sessionCookies';
+import { sessionVersion } from '../utils/sessionVersion';
+
+// Compared against when the email is unknown, so a missing account takes as long
+// to reject as a wrong password (prevents discovering which emails are registered).
+// (A cost-12 hash of a random value nobody knows.)
+const DUMMY_PASSWORD_HASH = '$2a$12$9Ly/RFjs9Cxfeq94zINrMurRVQ1Yc3XRVL.nwPNLYq7VYF18zzo8u';
 
 const tokenLifetimeMs: Record<typeof env.JWT_EXPIRES_IN, number> = {
   '15m': 15 * 60 * 1000,
@@ -157,6 +163,7 @@ export const login = async (req: AuthRequest, res: Response) => {
       where: { email: { equals: email, mode: 'insensitive' } },
     });
     if (!user) {
+      await bcrypt.compare(password, DUMMY_PASSWORD_HASH);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
@@ -180,9 +187,13 @@ export const login = async (req: AuthRequest, res: Response) => {
     const mustChangePassword = user.status === 'must_change_password';
     step = 'sign_access_token';
     const token = jwt.sign(
-      { userId: user.id, ...(mustChangePassword ? { passwordChangeOnly: true } : {}) },
+      {
+        userId: user.id,
+        sv: sessionVersion(user.passwordHash),
+        ...(mustChangePassword ? { passwordChangeOnly: true } : {}),
+      },
       jwtSecret,
-      { expiresIn: mustChangePassword ? '15m' : env.JWT_EXPIRES_IN }
+      { algorithm: 'HS256', expiresIn: mustChangePassword ? '15m' : env.JWT_EXPIRES_IN }
     );
     step = 'set_session_cookies';
     const csrfToken = issueSessionCookies(
@@ -274,9 +285,11 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
       where: { id: user.id },
       data: { passwordHash, status: 'active' },
     });
-    const token = jwt.sign({ userId: updatedUser.id }, getJwtSecret(), {
-      expiresIn: env.JWT_EXPIRES_IN,
-    });
+    const token = jwt.sign(
+      { userId: updatedUser.id, sv: sessionVersion(updatedUser.passwordHash) },
+      getJwtSecret(),
+      { algorithm: 'HS256', expiresIn: env.JWT_EXPIRES_IN }
+    );
     const csrfToken = issueSessionCookies(res, token, tokenLifetimeMs[env.JWT_EXPIRES_IN]);
 
     return res.json({
@@ -335,10 +348,11 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
 
-    const { name, avatar } = req.body;
-    const data: any = {};
+    const { name, avatar } = req.body as { name?: string; avatar?: string | null };
+    const data: { fullName?: string; avatar?: string | null } = {};
     if (name) data.fullName = name;
-    if (avatar) data.avatar = avatar;
+    // A data URL sets a new picture; null removes it.
+    if (avatar !== undefined) data.avatar = avatar;
 
     const user = await prisma.user.update({
       where: { id: req.user.id },
@@ -350,6 +364,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       fullName: user.fullName,
       email: user.email,
       role: user.role,
+      schoolName: user.schoolName,
       avatar: user.avatar,
     });
   } catch (error) {

@@ -10,9 +10,10 @@ export const getAllGalleryItems = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
     const { category, mediaType } = req.query;
 
-    const where: any = { isPublished: true };
-    if (category) where.category = category;
-    if (mediaType) where.mediaType = mediaType;
+    // Only plain values from the known sets; nested query objects (?category[not]=x) are ignored.
+    const where: { isPublished: true; category?: string; mediaType?: 'IMAGE' | 'VIDEO' } = { isPublished: true };
+    if (typeof category === 'string' && ['Events', 'School Seminars'].includes(category)) where.category = category;
+    if (mediaType === 'IMAGE' || mediaType === 'VIDEO') where.mediaType = mediaType;
 
     const [items, total] = await Promise.all([
       prisma.galleryItem.findMany({

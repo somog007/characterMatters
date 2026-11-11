@@ -27,7 +27,6 @@ interface PlanConfig {
   badge?: string;
   recommended?: boolean;
   gradient: string;
-  contentUrl?: string;
   ageBreakdown: {
     toddler: string;   // Ages 2 & 3
     preK: string;      // Ages 4 & 5
@@ -154,7 +153,6 @@ const PLANS: PlanConfig[] = [
     priceLabel: '₦150,000',
     amount: 150000,
     gradient: 'from-cyan-100 via-sky-100 to-blue-100',
-    contentUrl: 'https://collection.cloudinary.com/crau2l9a/fafda5942927feb6d904a3105bda1d79',
     ageBreakdown: {
       toddler: '1 episode',
       preK: '1 episode',
@@ -260,12 +258,10 @@ function SubscribeContent() {
     setSelectedPlanId(plan.id);
     setLocalNotice(null);
 
-    dispatch(
-      startPaystackCheckout({
-        planId: plan.id,
-        amount: plan.amount,
-      })
-    );
+    dispatch(startPaystackCheckout({ planId: plan.id })).then((result) => {
+      // A refused checkout may mean an earlier payment was just confirmed: refresh the status.
+      if (startPaystackCheckout.rejected.match(result)) dispatch(fetchSubscription());
+    });
   };
 
   const handleCancelSubscription = () => {
@@ -336,14 +332,17 @@ function SubscribeContent() {
                 Billing via Paystack · Plan: {activePlanTitle}
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">
-                <a
-                  href="https://collection.cloudinary.com/crau2l9a/fafda5942927feb6d904a3105bda1d79"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-full bg-blue-600 px-6 py-2 font-semibold text-white transition hover:bg-blue-700 shadow-md flex items-center gap-2"
-                >
-                  <span>📁</span> Access Bronze Cloudinary Collection
-                </a>
+                {subscriptionState.data.resources?.map((resource) => (
+                  <a
+                    key={resource.url}
+                    href={resource.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full bg-blue-600 px-6 py-2 font-semibold text-white transition hover:bg-blue-700 shadow-md flex items-center gap-2"
+                  >
+                    <span>📁</span> {resource.label}
+                  </a>
+                ))}
                 <button
                   onClick={handleCancelSubscription}
                   disabled={subscriptionState.loading}

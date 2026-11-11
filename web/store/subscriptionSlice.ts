@@ -13,6 +13,8 @@ interface Subscription {
   currentPeriodStart?: string;
   currentPeriodEnd?: string;
   paymentProvider?: string;
+  /** Paid-content links, sent by the API only while the subscription is ACTIVE. */
+  resources?: { label: string; url: string }[];
 }
 
 interface SubscriptionState {
@@ -45,7 +47,7 @@ export const fetchSubscription = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await api.get('/subscriptions');
-      return res.data as Subscription;
+      return (res.data || null) as Subscription | null;
     } catch (error: unknown) {
       return rejectWithValue(handleError(error, 'Failed to fetch subscription'));
     }
@@ -55,7 +57,7 @@ export const fetchSubscription = createAsyncThunk(
 export const startPaystackCheckout = createAsyncThunk(
   'subscription/startPaystackCheckout',
   async (
-    payload: { planId: string; amount: number; billingCycle?: BillingCycle },
+    payload: { planId: string },
     { rejectWithValue }
   ) => {
     try {
@@ -107,9 +109,8 @@ const subscriptionSlice = createSlice({
     builder
       .addCase(fetchSubscription.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
-      .addCase(fetchSubscription.fulfilled, (state, action: PayloadAction<Subscription>) => {
+      .addCase(fetchSubscription.fulfilled, (state, action: PayloadAction<Subscription | null>) => {
         state.loading = false;
         state.data = action.payload;
       })

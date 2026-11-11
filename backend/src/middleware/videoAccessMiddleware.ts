@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth';
 import prisma from '../config/prisma';
 import { handleControllerError } from '../utils/handleControllerError';
+import { getClientIp } from '../utils/clientIp';
 
 // Access tier hierarchy — higher tiers include all lower tiers
 const TIER_HIERARCHY: Record<string, number> = {
@@ -77,7 +78,7 @@ export const authorizeVideoCategoryAccess = async (req: AuthRequest, res: Respon
         userId: user.id,
         eventType: 'UNAUTHORIZED_VIDEO_ACCESS',
         severity: 'high',
-        ipAddress: req.ip || '0.0.0.0',
+        ipAddress: getClientIp(req),
         userAgent: req.headers['user-agent'] || 'Unknown',
         metadata: { videoId, accessTier: video.accessTier },
       },

@@ -11,6 +11,10 @@
     "../backend/node_modules/.prisma/client/**"
   ]
 
+# Keeps the API and database connection warm (see web/functions/keep-warm.ts).
+[functions."keep-warm"]
+  schedule = "*/5 * * * *"
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 

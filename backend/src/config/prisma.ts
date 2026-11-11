@@ -11,7 +11,16 @@ if (!runtimeDatabaseUrl) {
   throw new Error('DATABASE_URL or DATABASE_URL_POOLED must be configured');
 }
 
-const adapter = new PrismaPg({ connectionString: runtimeDatabaseUrl });
+// Serverless-friendly pool: give up on a connection attempt after 10 s instead of
+// waiting indefinitely (pg's default), keep sockets alive, and drop idle connections
+// quickly so a function that was frozen does not reuse a dead socket.
+const adapter = new PrismaPg({
+  connectionString: runtimeDatabaseUrl,
+  max: 5,
+  connectionTimeoutMillis: 10_000,
+  idleTimeoutMillis: 10_000,
+  keepAlive: true,
+});
 
 export const prisma =
   globalForPrisma.prisma ??

@@ -1,7 +1,7 @@
 [build]
   # Build from the web folder
   base = "web"
-  command = "cd .. && npm ci --legacy-peer-deps --include=dev --workspaces=true --include-workspace-root && npm run prisma:check-versions && npm run prisma8:generate && npm --prefix backend run build && NODE_ENV=test npm --prefix backend test -- --runInBand && cd web && npm run build"
+  command = "cd .. && npm ci --legacy-peer-deps --include=dev --workspaces=true --include-workspace-root && npm run prisma:check-versions && npm --prefix backend run build && NODE_ENV=test npm --prefix backend test -- --runInBand && cd web && npm run build"
   functions = "functions"
 
 [functions]
@@ -10,6 +10,10 @@
     "../node_modules/.prisma/client/**",
     "../backend/node_modules/.prisma/client/**"
   ]
+
+# Keeps the API and database connection warm (see web/functions/keep-warm.ts).
+[functions."keep-warm"]
+  schedule = "*/5 * * * *"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -38,6 +42,17 @@
   from = "/welcome/*"
   to = "/welcome/:splat"
   status = 200
+
+# Browser security headers for every page and API response.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+    Content-Security-Policy = "frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
 
 [build.environment]
   NODE_ENV = "production"

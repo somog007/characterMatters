@@ -13,8 +13,9 @@ The Next.js App Router serves the pages. Express handles the API and authenticat
    - `JWT_SECRET` with at least 32 random characters, preferably 64+ from a cryptographic generator; use the same secret for all API and email-background Functions
    - `JWT_EXPIRES_IN=7d`
    - `SENDGRID_API_KEY` with Mail Send permission and `SENDGRID_FROM_EMAIL` at an authenticated/verified domain
-   - `PAYSTACK_SECRET_KEY` and `PAYSTACK_CALLBACK_URL`
-   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`
+   - `PAYSTACK_SECRET_KEY` (secret, Functions scope; without it checkout shows "Online payment is not available yet") and optionally `PAYSTACK_CALLBACK_URL` (defaults to `<SITE_URL>/subscribe`)
+   - `SUBSCRIBER_COLLECTION_URL` (optional): the HTTPS link shown to active subscribers on `/subscribe`. If unset, the public preview collection is used.
+   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` (secret), from the Cloudinary dashboard. They are required for **Admin → Upload content**: the browser uploads files straight to Cloudinary using a signature from `POST /api/admin/uploads/sign`, because Netlify Functions cannot receive bodies over about 6 MB. Lessons, eBooks and gallery items only accept media URLs from this Cloudinary account. To serve worksheet and eBook PDFs, enable **Settings → Security → Allow delivery of PDF and ZIP files** in Cloudinary.
    - `CDN_SIGNING_SECRET` and `HLS_AES_128_MASTER_KEY` for protected video playback
    - `SENDGRID_DATA_RESIDENCY=eu` only when using an EU regional SendGrid subuser; otherwise leave unset
    - `SENTRY_DSN` and `REDIS_URL` only if those services are configured
@@ -64,7 +65,7 @@ For external DNS, Netlify's current recommended apex target is an ALIAS/ANAME/fl
 
 Set `DIRECT_URL` (or `DATABASE_URL`) in your shell to the production direct connection string before running these; `prisma7.config.ts` reads it. After deploying, `POST /api/auth/login` with an unknown email must return 400 "Invalid credentials", not 500.
 
-The root `package.json` overrides `effect` to v4 for the Prisma 8 tooling; it pins `@prisma/config@7.10.0` back to `effect@3.20.0` because the Prisma 7 CLI cannot load `prisma7.config.ts` otherwise. Keep that nested override while both Prisma versions are installed.
+The unused Prisma 8 / Prisma Compute tooling (and its `effect` overrides) has been removed; the project uses Prisma 7 (`@prisma/prisma7`, `@prisma/client`, `@prisma/adapter-pg`, all 7.10.1, checked by `npm run prisma:check-versions`). The standalone `characterMatters/` folder and `prisma.compute.json` are not part of the build.
 
 For Prisma, inspect the migration SQL and check the target/staging database first. Then run from the repository root:
 
@@ -77,9 +78,16 @@ npm --prefix backend run prisma:deploy
 `prisma:deploy` runs `prisma7 migrate deploy` using `DIRECT_URL` (or `DATABASE_URL` as a fallback). Apply the migration on staging before production and verify the `users.emailVerified` column and `email_verification_tokens` table before deploying code that uses them. Do not run production migrations until you have verified the backup and current schema.
 
 ## Local Verification
+This is an npm workspace with a single lockfile at the repository root. Install from the root:
+
 ```powershell
-cd backend
-npm ci
-npm run build
-npm test -- --runInBand
+npm ci --legacy-peer-deps --include=dev --workspaces=true --include-workspace-root
+npm --prefix backend run build
+npm --prefix backend test -- --runInBand
 ```
+
+## Security notes
+- Session tokens carry a fingerprint of the password hash; changing a password signs out every other session. Deploying this change signs everyone out once.
+- Rate limits are counted per visitor IP (Netlify's `x-nf-client-connection-ip`). Limits are kept in memory per function instance; set up a shared store (e.g. Redis) if stricter limits are needed.
+- Profile pictures are resized in the browser to 256x256 JPEG and stored as data URLs; the API accepts only PNG/JPEG/WebP data URLs whose bytes match the type.
+- Security headers (HSTS, `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, a minimal CSP) are set in `netlify.toml`.

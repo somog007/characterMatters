@@ -18,6 +18,7 @@ import galleryRoutes from './routes/gallery';
 import adminRoutes from './routes/admin';
 import playbackRoutes from './routes/playbackRoutes';
 import { env, isProduction } from './config/env';
+import { getClientIp } from './utils/clientIp';
 
 // Initialize Sentry
 Sentry.init({
@@ -26,9 +27,18 @@ Sentry.init({
 });
 
 const app = express();
-if (isProduction()) {
+// Requests reach the API through one proxy hop (Netlify's edge or a local dev proxy).
+// Trusting it makes req.ip and req.protocol reflect the visitor, not the proxy.
+const isServerless = Boolean(
+  env.NETLIFY ||
+  env.AWS_LAMBDA_FUNCTION_NAME ||
+  env.SERVERLESS ||
+  env.VERCEL
+);
+if (isProduction() || isServerless) {
   app.set('trust proxy', 1);
 }
+app.disable('x-powered-by');
 
 const productionSiteOrigin = new URL(env.SITE_URL);
 const alternateSiteOrigin = new URL(env.SITE_URL);
@@ -53,34 +63,36 @@ app.use((req, _res, next) => {
 // Security middleware
 app.use(helmet());
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+// Rate limiting, counted per visitor IP (not per proxy).
+const rateLimitDefaults = {
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req: express.Request) => getClientIp(req),
+  validate: { trustProxy: false, xForwardedForHeader: false, ip: false },
+} as const;
+const limiter = rateLimit({
+  ...rateLimitDefaults,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 300, // per IP per window; the site makes several API calls per page
 });
 app.use(limiter);
 
 const loginLimiter = rateLimit({
+  ...rateLimitDefaults,
   windowMs: 15 * 60 * 1000,
   limit: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
   message: { message: 'Too many login attempts. Try again later.' },
 });
 const signupLimiter = rateLimit({
+  ...rateLimitDefaults,
   windowMs: 15 * 60 * 1000,
   limit: 5,
-  standardHeaders: true,
-  legacyHeaders: false,
   message: { message: 'Too many signup attempts. Try again later.' },
 });
 const verificationLimiter = rateLimit({
+  ...rateLimitDefaults,
   windowMs: 15 * 60 * 1000,
   limit: 3,
-  standardHeaders: true,
-  legacyHeaders: false,
   message: { message: 'Too many verification requests. Try again later.' },
 });
 
@@ -227,13 +239,6 @@ const startServer = async () => {
     logger.info({ message: 'Process exiting', code });
   });
 };
-
-const isServerless = Boolean(
-  env.NETLIFY ||
-  env.AWS_LAMBDA_FUNCTION_NAME ||
-  env.SERVERLESS ||
-  env.VERCEL
-);
 
 if (env.NODE_ENV !== 'test' && !isServerless) {
   startServer();

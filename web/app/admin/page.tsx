@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import api from '@/lib/api';
 import { useAppSelector } from '@/store/hooks';
 import Link from 'next/link';
+import UploadContent from '@/components/admin/UploadContent';
 
 interface UserWithRole {
   id: string;
@@ -23,7 +24,14 @@ interface AdminMetrics {
   activeSubscriptions: number;
 }
 
-type TabKey = 'overview' | 'users' | 'subscriptions';
+type TabKey = 'overview' | 'users' | 'subscriptions' | 'upload';
+
+const TAB_LABELS: Record<TabKey, string> = {
+  overview: 'Overview',
+  users: 'Users',
+  subscriptions: 'Subscriptions',
+  upload: 'Upload content',
+};
 
 export default function AdminPage() {
   const { user } = useAppSelector((s) => s.auth);
@@ -84,7 +92,7 @@ export default function AdminPage() {
     return matchesSearch && matchesRole;
   });
 
-  const tabs: TabKey[] = ['overview', 'users', 'subscriptions'];
+  const tabs: TabKey[] = ['overview', 'users', 'subscriptions', 'upload'];
 
   return (
     <div className="container mx-auto p-6">
@@ -99,7 +107,7 @@ export default function AdminPage() {
       {error && <div className="bg-red-100 text-red-700 p-4 rounded mb-4">{error}</div>}
 
       {/* Tab Navigation */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex flex-wrap gap-4 mb-6">
         {tabs.map((tab) => (
           <button
             key={tab}
@@ -110,7 +118,7 @@ export default function AdminPage() {
                 : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
             }`}
           >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {TAB_LABELS[tab]}
           </button>
         ))}
       </div>
@@ -216,6 +224,8 @@ export default function AdminPage() {
               </div>
             </div>
           )}
+
+          {selectedTab === 'upload' && <UploadContent />}
 
           {/* Subscriptions Tab */}
           {selectedTab === 'subscriptions' && (

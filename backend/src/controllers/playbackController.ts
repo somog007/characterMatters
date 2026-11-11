@@ -4,13 +4,14 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/prisma';
 import { handleControllerError } from '../utils/handleControllerError';
 import { env } from '../config/env';
+import { getClientIp } from '../utils/clientIp';
 
 export const createPlaybackSession = async (req: AuthRequest, res: Response) => {
   try {
     const { videoId } = req.params;
     const user = req.user!;
     const deviceId = (req.headers['x-device-id'] as string) || 'default-web-device';
-    const ipAddress = req.ip || req.socket.remoteAddress || '0.0.0.0';
+    const ipAddress = getClientIp(req);
     const userAgent = req.headers['user-agent'] || 'Unknown';
 
     // 1. Enforce Concurrent Device Limits

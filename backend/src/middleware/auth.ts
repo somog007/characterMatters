@@ -6,10 +6,11 @@ import { env } from '../config/env';
 import { logger } from './logger';
 import type { User } from '../generated/prisma/client';
 import { ACCESS_COOKIE, CSRF_COOKIE } from '../utils/sessionCookies';
+import { sessionVersion } from '../utils/sessionVersion';
 
 export interface AuthRequest extends Request {
   user?: User;
-  authToken?: { userId: string; passwordChangeOnly?: boolean };
+  authToken?: { userId: string; passwordChangeOnly?: boolean; sv?: string };
   body: any;
   params: any;
   query: any;
@@ -31,13 +32,13 @@ export const auth = async (req: AuthRequest, res: Response, next: NextFunction) 
     return res.status(401).json({ message: 'No token, authorization denied' });
   }
 
-  let decoded: { userId: string; passwordChangeOnly?: boolean };
+  let decoded: { userId: string; passwordChangeOnly?: boolean; sv?: string };
   try {
-    const verified = jwt.verify(token, getJwtSecret());
+    const verified = jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'] });
     if (typeof verified === 'string' || typeof verified.userId !== 'string') {
       return res.status(401).json({ message: 'Token is not valid' });
     }
-    decoded = verified as { userId: string; passwordChangeOnly?: boolean };
+    decoded = verified as { userId: string; passwordChangeOnly?: boolean; sv?: string };
   } catch {
     return res.status(401).json({ message: 'Token is not valid' });
   }
@@ -45,7 +46,8 @@ export const auth = async (req: AuthRequest, res: Response, next: NextFunction) 
   try {
     const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
 
-    if (!user) {
+    // Tokens issued before the latest password change are rejected.
+    if (!user || decoded.sv !== sessionVersion(user.passwordHash)) {
       return res.status(401).json({ message: 'Token is not valid' });
     }
 

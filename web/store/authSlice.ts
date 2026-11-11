@@ -7,7 +7,7 @@ interface User {
   name: string;
   role: string;
   schoolName?: string | null;
-  avatar?: string;
+  avatar?: string | null;
   subscription?: { status: string; plan: string } | null;
 }
 

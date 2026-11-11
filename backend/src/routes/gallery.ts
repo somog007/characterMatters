@@ -1,8 +1,7 @@
 import express from 'express';
 import { auth } from '../middleware/auth';
-import { cleanupUploadedFiles, upload } from '../middleware/upload';
 import { validateBody } from '../middleware/validators';
-import { GalleryCreateSchema } from '../middleware/validation';
+import { GalleryCreateSchema, GalleryUpdateSchema } from '../middleware/validation';
 import { requireRole, canManageGallery } from '../middleware/authorization';
 import { getAllGalleryItems, getGalleryItemById, createGalleryItem, updateGalleryItem, deleteGalleryItem } from '../controllers/galleryController';
 
@@ -10,8 +9,8 @@ const router = express.Router();
 
 router.get('/', getAllGalleryItems);
 router.get('/:id', getGalleryItemById);
-router.post('/', auth, requireRole('ADMIN'), cleanupUploadedFiles, upload.single('file'), validateBody(GalleryCreateSchema), createGalleryItem);
-router.put('/:id', auth, canManageGallery, updateGalleryItem);
+router.post('/', auth, requireRole('ADMIN'), validateBody(GalleryCreateSchema), createGalleryItem);
+router.put('/:id', auth, canManageGallery, validateBody(GalleryUpdateSchema), updateGalleryItem);
 router.delete('/:id', auth, canManageGallery, deleteGalleryItem);
 
 export default router;

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../config/prisma';
 import { handleControllerError } from '../utils/handleControllerError';
+import { hlsUrlFor } from './uploadController';
 
 export const getAllVideos = async (req: Request, res: Response) => {
   try {
@@ -79,7 +80,7 @@ export const getVideoById = async (req: Request, res: Response) => {
 
 export const createVideo = async (req: AuthRequest, res: Response) => {
   try {
-    const { title, description, ageGroup, accessTier, videoUrl, thumbnailUrl, worksheetUrl, durationSeconds, price, categoryId } = req.body;
+    const { title, description, ageGroup, accessTier, videoUrl, thumbnailUrl, worksheetUrl, durationSeconds } = req.body;
 
     const video = await prisma.lesson.create({
       data: {
@@ -87,12 +88,12 @@ export const createVideo = async (req: AuthRequest, res: Response) => {
         description,
         ageGroup: ageGroup || 'TODDLER',
         accessTier: accessTier || 'BRONZE',
-        videoUrl: videoUrl || '',
+        videoUrl,
+        // Cloudinary serves an adaptive (HLS) stream for every uploaded video.
+        hlsManifestPath: hlsUrlFor(videoUrl),
         thumbnailUrl,
         worksheetUrl,
         durationSeconds: durationSeconds || 0,
-        price: price || 50000,
-        categoryId,
       },
     });
 

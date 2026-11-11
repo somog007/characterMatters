@@ -8,7 +8,6 @@ import {
 } from '../controllers/videoController';
 import { auth } from '../middleware/auth';
 import { requireRole, canManageVideo } from '../middleware/authorization';
-import { cleanupUploadedFiles, upload } from '../middleware/upload';
 import { validateBody } from '../middleware/validators';
 import { VideoCreateSchema, VideoUpdateSchema } from '../middleware/validation';
 
@@ -16,10 +15,7 @@ const router = express.Router();
 
 router.get('/', getAllVideos);
 router.get('/:id', getVideoById);
-router.post('/', auth, requireRole('ADMIN'), cleanupUploadedFiles, upload.fields([
-  { name: 'thumbnail', maxCount: 1 },
-  { name: 'video', maxCount: 1 },
-]), validateBody(VideoCreateSchema), createVideo);
+router.post('/', auth, requireRole('ADMIN'), validateBody(VideoCreateSchema), createVideo);
 router.put('/:id', auth, canManageVideo, validateBody(VideoUpdateSchema), updateVideo);
 router.delete('/:id', auth, canManageVideo, deleteVideo);
 

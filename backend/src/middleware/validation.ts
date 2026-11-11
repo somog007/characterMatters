@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { PLAN_IDS } from '../config/plans';
+import { UPLOAD_KIND_NAMES, isOwnCloudinaryUrl } from '../controllers/uploadController';
 
 // Profile pictures are stored as small data URLs (the browser resizes them to
 // 256x256 first). Only PNG, JPEG and WebP are accepted, and the file's first
@@ -21,9 +22,14 @@ const avatarSchema = z
   }, 'Profile picture must be a PNG, JPEG or WebP image')
   .nullable();
 
-const optionalHttpsUrl = z.string().trim().url().max(2048)
-  .refine((value) => value.startsWith('https://'), 'Must be an https:// URL')
-  .optional();
+// Media must live in this site's own Cloudinary account (uploaded via /api/admin/uploads/sign).
+const cloudinaryUrl = z.string().trim().max(2048)
+  .refine(isOwnCloudinaryUrl, 'Must be a file uploaded to this site’s Cloudinary account');
+const optionalHttpsUrl = cloudinaryUrl.optional();
+
+export const UploadSignSchema = z.object({
+  kind: z.enum(UPLOAD_KIND_NAMES),
+});
 
 const passwordSchema = z
   .string()
@@ -88,8 +94,10 @@ export const VideoCreateSchema = z.object({
   description: z.string().trim().min(10, 'Description required').max(4000),
   ageGroup: z.enum(['TODDLER', 'PRE_K', 'SCHOOL_AGE']).optional(),
   accessTier: z.enum(['BRONZE', 'SILVER', 'GOLD', 'SAPPHIRE', 'DIAMOND', 'PLATINUM']).optional(),
-  videoUrl: z.string().url().optional(),
-  durationSeconds: z.coerce.number().min(0).optional(),
+  videoUrl: cloudinaryUrl,
+  thumbnailUrl: optionalHttpsUrl,
+  worksheetUrl: optionalHttpsUrl,
+  durationSeconds: z.coerce.number().int().min(0).max(24 * 60 * 60).optional(),
 });
 
 export const VideoUpdateSchema = z.object({
@@ -108,6 +116,8 @@ export const GalleryCreateSchema = z.object({
   school: z.string().optional(),
   eventDate: z.string().optional(),
   mediaType: z.enum(['IMAGE', 'VIDEO']),
+  mediaUrl: cloudinaryUrl,
+  thumbnailUrl: optionalHttpsUrl,
 });
 
 export const PaystackCheckoutSchema = z.object({

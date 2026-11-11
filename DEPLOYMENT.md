@@ -15,7 +15,7 @@ The Next.js App Router serves the pages. Express handles the API and authenticat
    - `SENDGRID_API_KEY` with Mail Send permission and `SENDGRID_FROM_EMAIL` at an authenticated/verified domain
    - `PAYSTACK_SECRET_KEY` (secret, Functions scope; without it checkout shows "Online payment is not available yet") and optionally `PAYSTACK_CALLBACK_URL` (defaults to `<SITE_URL>/subscribe`)
    - `SUBSCRIBER_COLLECTION_URL` (optional): the HTTPS link shown to active subscribers on `/subscribe`. If unset, the public preview collection is used.
-   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`
+   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` (secret), from the Cloudinary dashboard. They are required for **Admin → Upload content**: the browser uploads files straight to Cloudinary using a signature from `POST /api/admin/uploads/sign`, because Netlify Functions cannot receive bodies over about 6 MB. Lessons, eBooks and gallery items only accept media URLs from this Cloudinary account. To serve worksheet and eBook PDFs, enable **Settings → Security → Allow delivery of PDF and ZIP files** in Cloudinary.
    - `CDN_SIGNING_SECRET` and `HLS_AES_128_MASTER_KEY` for protected video playback
    - `SENDGRID_DATA_RESIDENCY=eu` only when using an EU regional SendGrid subuser; otherwise leave unset
    - `SENTRY_DSN` and `REDIS_URL` only if those services are configured

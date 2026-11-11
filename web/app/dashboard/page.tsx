@@ -28,6 +28,14 @@ export default function Dashboard() {
             Hello, <span className="font-bold text-purple-600">{user?.name || 'Friend'}</span>! 
             Ready to explore Character Matters content?
           </p>
+          {user?.role === 'SCHOOL_ADMIN' && (
+            <p className="text-lg text-center text-gray-600 -mt-8 mb-12">
+              School account{user.schoolName ? `: ${user.schoolName}` : ''} 🏫
+            </p>
+          )}
+          {user?.role === 'PARENT' && (
+            <p className="text-lg text-center text-gray-600 -mt-8 mb-12">Parent account 👨‍👩‍👧</p>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <AnimatedCard delay={0.1} className="bg-gradient-to-br from-purple-100 to-pink-100">
@@ -76,7 +84,7 @@ export default function Dashboard() {
                   >
                     View Profile
                   </Link>
-                  {user?.role !== 'subscriber' && (
+                  {user?.subscription?.status !== 'ACTIVE' && (
                     <Link
                       href="/subscribe"
                       className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-2 px-6 rounded-full transition-colors"

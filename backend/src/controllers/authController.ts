@@ -76,11 +76,14 @@ export const register = async (req: AuthRequest, res: Response) => {
   let step = 'validate_jwt_configuration';
   try {
     getJwtSecret();
-    const { name, email, password } = req.body as {
+    const { name, email, password, accountType, schoolName } = req.body as {
       name: string;
       email: string;
       password: string;
+      accountType: 'PARENT' | 'SCHOOL';
+      schoolName?: string;
     };
+    const isSchool = accountType === 'SCHOOL';
 
     step = 'check_existing_account';
     const existingUser = await prisma.user.findFirst({
@@ -102,6 +105,8 @@ export const register = async (req: AuthRequest, res: Response) => {
           email,
           passwordHash,
           emailVerified: false,
+          role: isSchool ? 'SCHOOL_ADMIN' : 'PARENT',
+          schoolName: isSchool ? schoolName : null,
         },
       });
       const token = crypto.randomBytes(32).toString('base64url');
@@ -315,6 +320,7 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
       fullName: user.fullName,
       email: user.email,
       role: user.role,
+      schoolName: user.schoolName,
       status: user.status,
       avatar: user.avatar,
       subscription: user.subscription,

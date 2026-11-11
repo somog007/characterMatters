@@ -25,6 +25,6 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 This web application is configured for deployment on **Netlify** using [`netlify.toml`](../netlify.toml).
 
 - **Frontend Hosting**: Netlify
-- **Backend Service**: Node.js / Express on Render or Cloud Run
+- **Backend Service**: Node.js / Express, deployed as a Netlify Function (`web/functions/api.ts`)
 - **Database**: PostgreSQL
 

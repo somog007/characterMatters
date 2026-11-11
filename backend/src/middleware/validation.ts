@@ -12,7 +12,12 @@ export const AuthRegisterSchema = z.object({
   name: z.string().trim().min(2).max(120),
   email: z.string().trim().email().transform((email) => email.toLowerCase()),
   password: passwordSchema,
-});
+  accountType: z.enum(['PARENT', 'SCHOOL']).default('PARENT'),
+  schoolName: z.string().trim().min(2).max(160).optional(),
+}).refine(
+  (data) => data.accountType !== 'SCHOOL' || Boolean(data.schoolName),
+  { path: ['schoolName'], message: 'School name is required for school accounts' }
+);
 
 export const AuthLoginSchema = z.object({
   email: z.string().trim().email().transform((email) => email.toLowerCase()),
